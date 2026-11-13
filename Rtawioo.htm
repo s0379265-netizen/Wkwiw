@@ -39,7 +39,6 @@
   
   .app-wrapper { width: 100%; max-width: 1200px; background: var(--bg); min-height: 100vh; position: relative; padding-bottom: 80px; display: flex; flex-direction: column; }
   
-  /* Topbar (Glassmorphism) */
   .topbar { background: rgba(15, 15, 15, 0.75); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); border-bottom: 1px solid var(--border); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; gap: 15px; }
   .logo { font-weight: 900; font-size: 24px; display: flex; align-items: center; gap: 8px; cursor: pointer; letter-spacing: -0.5px; }
   .logo i { color: var(--red); font-size: 28px; text-shadow: 0 0 20px rgba(255,0,0,0.4); }
@@ -54,12 +53,10 @@
   .user-avatar-top { width: 38px; height: 38px; border-radius: 50%; background: var(--card); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; cursor: pointer; border: 2px solid var(--border); overflow: hidden; }
   .user-avatar-top img { width: 100%; height: 100%; object-fit: cover; }
 
-  /* Views */
   .view { display: none; animation: fadeSlide 0.4s ease-out; flex: 1; }
   .view.active { display: block; }
   @keyframes fadeSlide { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 
-  /* Video Grid */
   .video-grid { display: grid; grid-template-columns: 1fr; gap: 24px; padding: 20px; }
   @media (min-width: 600px) { .video-grid { grid-template-columns: repeat(2, 1fr); } }
   @media (min-width: 1000px) { .video-grid { grid-template-columns: repeat(3, 1fr); } }
@@ -80,7 +77,6 @@
   .video-channel-name { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
   .video-stats { font-size: 12px; color: var(--muted); }
 
-  /* Shorts */
   #viewShorts { background: #000; padding: 0; }
   .shorts-feed { height: calc(100vh - 80px); overflow-y: auto; scroll-snap-type: y mandatory; scrollbar-width: none; }
   .shorts-feed::-webkit-scrollbar { display: none; }
@@ -95,7 +91,6 @@
   .short-info h3 { font-size: 18px; margin-bottom: 8px; font-weight: 800; }
   .short-info p { font-size: 14px; color: #ddd; }
 
-  /* Player */
   #viewPlayer { background: var(--bg); }
   .player-container { width: 100%; aspect-ratio: 16/9; background: #000; position: relative; display: flex; align-items: center; justify-content: center; }
   .player-container video { width: 100%; height: 100%; object-fit: contain; z-index: 2; }
@@ -133,7 +128,6 @@
   .comment-input-wrapper button:hover { transform: scale(1.05); }
   .comment-item { display: flex; gap: 12px; margin-bottom: 18px; }
 
-  /* Upload */
   .upload-container { max-width: 600px; margin: 0 auto; padding: 25px; }
   .upload-box { background: var(--card); border-radius: var(--radius); padding: 30px; border: 1px solid var(--border); backdrop-filter: var(--glass-blur); }
   .form-group { margin-bottom: 25px; }
@@ -155,7 +149,6 @@
   
   uc-file-uploader-regular { --uc-color-primary: #ff0000; --uc-color-primary-hover: #cc0000; --uc-color-background: #1e1e1e; --uc-color-text: #f1f1f1; --uc-color-border: rgba(255,255,255,0.1); --uc-border-radius: 12px; --uc-font-family: 'Vazirmatn', sans-serif; }
 
-  /* Profile */
   .profile-header { display: flex; flex-direction: column; align-items: center; padding: 50px 20px; background: linear-gradient(180deg, rgba(255,0,0,0.08) 0%, transparent 100%); border-bottom: 1px solid var(--border); }
   .profile-avatar { width: 110px; height: 110px; border-radius: 50%; background: var(--card); display: flex; align-items: center; justify-content: center; font-size: 45px; font-weight: bold; margin-bottom: 20px; border: 3px solid var(--red); overflow: hidden; box-shadow: 0 0 30px rgba(255,0,0,0.2); }
   .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
@@ -164,14 +157,12 @@
   .edit-profile-btn { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 12px 24px; border-radius: 30px; cursor: pointer; font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 8px; transition: var(--transition); }
   .edit-profile-btn:hover { background: var(--card-hover); }
 
-  /* Bottom Nav */
   .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; margin: 0 auto; max-width: 1200px; background: rgba(15, 15, 15, 0.85); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 10px 0; padding-bottom: max(10px, env(safe-area-inset-bottom)); z-index: 100; }
   .nav-item { display: flex; flex-direction: column; align-items: center; gap: 5px; color: var(--muted); background: none; border: none; font-size: 12px; cursor: pointer; width: 20%; padding: 5px 0; transition: var(--transition); }
   .nav-item i { font-size: 24px; transition: var(--transition); }
   .nav-item.active { color: var(--text); }
   .nav-item.active i { color: var(--red); transform: translateY(-3px); }
 
-  /* Modals */
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(10px); }
   .modal-overlay.show { display: flex; }
   .modal-box { background: var(--card); padding: 35px; border-radius: 20px; width: 100%; max-width: 420px; text-align: center; border: 1px solid var(--border); position: relative; backdrop-filter: var(--glass-blur); }
@@ -184,10 +175,9 @@
   .modal-switch:hover { color: var(--text); }
   .close-modal { position: absolute; top: 20px; right: 20px; background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
 
-  /* Live Stream */
   .live-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
   .live-video-wrapper { position: relative; width: 100%; max-width: 800px; aspect-ratio: 16/9; background: #000; border-radius: var(--radius); overflow: hidden; border: 2px solid var(--red); box-shadow: 0 0 30px rgba(255,0,0,0.3); }
-  .live-video-wrapper video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); /* آینه برای دوربین سلفی */ }
+  .live-video-wrapper video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
   .live-badge { position: absolute; top: 15px; left: 15px; background: var(--red); color: white; padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: bold; display: flex; align-items: center; gap: 6px; animation: pulse 1.5s infinite; }
   @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
   .live-controls { display: flex; gap: 15px; margin-top: 25px; }
@@ -211,7 +201,6 @@
     <div class="top-actions" id="topActions"></div>
   </div>
 
-  <!-- Auth Modal -->
   <div class="modal-overlay" id="authModal">
     <div class="modal-box">
       <button class="close-modal" onclick="closeAuth()">&times;</button>
@@ -225,7 +214,6 @@
     </div>
   </div>
 
-  <!-- Edit Profile Modal -->
   <div class="modal-overlay" id="editProfileModal">
     <div class="modal-box">
       <button class="close-modal" onclick="closeEditProfile()">&times;</button>
@@ -334,7 +322,6 @@
     </div>
   </div>
 
-  <!-- LIVE STREAM VIEW -->
   <div class="view" id="viewLive">
     <div class="live-container">
       <h2 style="margin-bottom: 25px; color: var(--red);"><i class="fas fa-broadcast-tower"></i> پخش زنده</h2>
@@ -373,9 +360,6 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// ==========================================
-// تنظیمات
-// ==========================================
 const BACKENDLESS_APP_ID = "C50651A5-1DFC-4BA1-AA34-B4444E9AC5A5";
 const BACKENDLESS_JS_API_KEY = "9303E7E8-BAF9-4023-A34B-E4E024192785";
 
@@ -387,17 +371,19 @@ let videos = [];
 let currentUser = null;
 let currentUploadType = 'video';
 let currentPlayerVideoId = null;
-let currentChannelId = null; // برای پروفایل کانال
+let currentChannelId = null;
 let currentSearchQuery = '';
 let pendingVideoData = null;
 let pendingThumbData = null;
 let pendingAvatarData = null;
 let isLoginMode = true;
-let liveStream = null; // برای دوربین
+let liveStream = null;
+let isFinalizing = false;
+let uploadersInitialized = false;
+let avatarUploaderInitialized = false;
+let videoCtxGlobal = null;
+let thumbCtxGlobal = null;
 
-// ==========================================
-// توابع کمکی
-// ==========================================
 function toast(msg, isError = false) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.className = 'toast show' + (isError ? ' error' : '');
@@ -406,20 +392,9 @@ function toast(msg, isError = false) {
 function formatNum(n) { return (n || 0).toLocaleString('fa-IR'); }
 function formatDate(ts) { if (!ts) return ''; return new Date(ts).toLocaleDateString('fa-IR'); }
 function cleanEmail(email) { return email.replace(/-/g, '').trim().toLowerCase(); }
+function getUserName(user) { if (!user) return 'کاربر'; return user.name || (user.email ? user.email.split('@')[0] : 'کاربر'); }
+function getUserAvatar(user) { if (!user) return null; return user.avatarUrl || null; }
 
-function getUserName(user) {
-  if (!user) return 'کاربر';
-  return user.name || (user.email ? user.email.split('@')[0] : 'کاربر');
-}
-
-function getUserAvatar(user) {
-  if (!user) return null;
-  return user.avatarUrl || null;
-}
-
-// ==========================================
-// احراز هویت
-// ==========================================
 function toggleAuthMode() {
   isLoginMode = !isLoginMode;
   document.getElementById('authUsername').style.display = isLoginMode ? 'none' : 'block';
@@ -431,41 +406,27 @@ function closeAuth() { document.getElementById('authModal').classList.remove('sh
 
 async function handleAuth() {
   if (typeof Backendless === 'undefined') { toast('خطا: سرور متصل نیست.', true); return; }
-
   const email = cleanEmail(document.getElementById('authEmail').value);
   const password = document.getElementById('authPassword').value;
   const username = document.getElementById('authUsername').value.trim();
-
-  if (!email || !password || (!isLoginMode && !username)) {
-    toast('لطفاً همه فیلدها را پر کنید.', true); return;
-  }
-
+  if (!email || !password || (!isLoginMode && !username)) { toast('لطفاً همه فیلدها را پر کنید.', true); return; }
   try {
-    if (isLoginMode) {
-      await Backendless.UserService.login(email, password, true);
-    } else {
+    if (isLoginMode) { await Backendless.UserService.login(email, password, true); }
+    else {
       const user = new Backendless.User();
-      user.email = email;
-      user.password = password;
-      user.name = username;
-      
+      user.email = email; user.password = password; user.name = username;
       await Backendless.UserService.register(user);
       await Backendless.UserService.login(email, password, true);
     }
-    
     closeAuth();
     checkUserSession();
     loadVideosFromServer();
     toast('خوش آمدید!');
-    
   } catch (err) {
     console.error(err);
     let msg = err.message || 'خطا در احراز هویت';
     if (msg.includes('already exists')) msg = 'این ایمیل قبلاً ثبت شده است.';
     if (msg.includes('Invalid login')) msg = 'ایمیل یا رمز عبور اشتباه است.';
-    if (msg.includes('Column \'name\' does not exist')) {
-      msg = 'خطا: لطفاً ستون name را در Backendless بسازید.';
-    }
     toast(msg, true);
   }
 }
@@ -489,7 +450,6 @@ function updateTopbar() {
   if (currentUser) {
     const name = getUserName(currentUser);
     const avatar = getUserAvatar(currentUser);
-    
     topActions.innerHTML = `
       <i class="fas fa-bell"></i>
       <div class="user-avatar-top" onclick="switchView('profile')">
@@ -497,7 +457,6 @@ function updateTopbar() {
       </div>
       <i class="fas fa-sign-out-alt" onclick="logout()" title="خروج" style="cursor:pointer; font-size:16px;"></i>
     `;
-    
     document.getElementById('profileAvatar').innerHTML = avatar ? `<img src="${avatar}">` : name.charAt(0).toUpperCase();
     document.getElementById('profileName').textContent = name;
   } else {
@@ -508,9 +467,6 @@ function updateTopbar() {
   }
 }
 
-// ==========================================
-// ویرایش پروفایل و آواتار
-// ==========================================
 function openEditProfile() {
   if (!currentUser) { openAuth(); return; }
   document.getElementById('editNameInput').value = getUserName(currentUser);
@@ -523,16 +479,12 @@ async function saveProfileChanges() {
   if (!currentUser) return;
   const newName = document.getElementById('editNameInput').value.trim();
   if (!newName) { toast('نام نمی‌تواند خالی باشد.', true); return; }
-  
   try {
     const updateData = { name: newName };
     if (pendingAvatarData) { updateData.avatarUrl = pendingAvatarData; }
-    
     await Backendless.Data.of("Users").save({ objectId: currentUser.objectId, ...updateData });
-    
     currentUser.name = newName;
     if (pendingAvatarData) currentUser.avatarUrl = pendingAvatarData;
-    
     closeEditProfile();
     updateTopbar();
     renderProfile();
@@ -543,24 +495,6 @@ async function saveProfileChanges() {
   }
 }
 
-async function setupAvatarUploader() {
-  try {
-    const UC = await import('https://cdn.jsdelivr.net/npm/@uploadcare/file-uploader@1/web/file-uploader.min.js');
-    UC.defineComponents(UC);
-    
-    const avatarCtx = document.querySelector('uc-upload-ctx-provider[ctx-name="avatar-uploader"]');
-    avatarCtx.addEventListener('common-upload-success', (e) => {
-      const entries = e.detail.successEntries || [];
-      if (!entries.length) return;
-      pendingAvatarData = entries[0].cdnUrl;
-      toast('آواتار آپلود شد. دکمه ذخیره را بزنید.');
-    });
-  } catch(e) { console.error(e); }
-}
-
-// ==========================================
-// لود ویدیوها
-// ==========================================
 async function loadVideosFromServer() {
   if (typeof Backendless === 'undefined') return;
   try {
@@ -581,9 +515,6 @@ async function loadVideosFromServer() {
   }
 }
 
-// ==========================================
-// رندر و گرافیک
-// ==========================================
 function filterVideos(list) {
   if (!currentSearchQuery) return list;
   const q = currentSearchQuery.toLowerCase();
@@ -615,8 +546,6 @@ function renderHome() {
   const grid = document.getElementById('videoGrid');
   const shortsSection = document.getElementById('shortsSection');
   const filteredVideos = filterVideos(videos);
-  
-  // رندر شورت‌ها (چه سرچ شده باشه چه نه)
   const shorts = filteredVideos.filter(v => v.type === 'short');
   if (shorts.length > 0) {
     shortsSection.style.display = 'block';
@@ -627,7 +556,6 @@ function renderHome() {
       </div>
     `).join('');
   } else { shortsSection.style.display = 'none'; }
-
   const longVideos = filteredVideos.filter(v => v.type === 'video');
   if (longVideos.length === 0) {
     grid.innerHTML = `<div class="empty-state"><i class="fas fa-video" style="font-size:50px; margin-bottom:15px;"></i><h3>${currentSearchQuery ? 'نتیجه‌ای یافت نشد' : 'هنوز ویدیویی وجود ندارد'}</h3></div>`; return;
@@ -649,7 +577,6 @@ function renderShorts() {
       </div>
     </div>
   `).join('');
-
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       const video = entry.target.querySelector('video');
@@ -660,52 +587,41 @@ function renderShorts() {
   document.querySelectorAll('.short-page').forEach(p => observer.observe(p));
 }
 
-// ==========================================
-// پروفایل (کانال)
-// ==========================================
 async function renderProfile() {
   if (!currentUser) { openAuth(); return; }
   document.getElementById('profileName').textContent = getUserName(currentUser);
   document.getElementById('profileAvatar').innerHTML = getUserAvatar(currentUser) ? `<img src="${getUserAvatar(currentUser)}">` : getUserName(currentUser).charAt(0).toUpperCase();
-  
   try {
     const query = Backendless.DataQueryBuilder.create().setWhereClause(`uploaderId='${currentUser.objectId}'`);
     const userVideos = await Backendless.Data.of("Videos").find(query);
     document.getElementById('profileVideoCount').textContent = formatNum(userVideos.length);
-    
     const grid = document.getElementById('profileVideoGrid');
     if (userVideos.length === 0) { grid.innerHTML = `<div class="empty-state"><i class="fas fa-video" style="font-size:50px; margin-bottom:15px;"></i><h3>هنوز ویدیویی آپلود نکرده‌اید</h3></div>`; return; }
-    
     grid.innerHTML = userVideos.map(v => createVideoCardHTML({ ...v, id: v.objectId, uploader: v.uploaderName || 'کاربر', timestamp: v.created })).join('');
+  } catch(e) { console.error(e); }
+}
+
+async function loadChannelProfile(channelId) {
+  try {
+    const query = Backendless.DataQueryBuilder.create().setWhereClause(`uploaderId='${channelId}'`);
+    const channelVideos = await Backendless.Data.of("Videos").find(query);
+    const channelName = channelVideos.length > 0 ? (channelVideos[0].uploaderName || 'کانال') : 'کانال';
+    document.getElementById('profileName').textContent = channelName;
+    document.getElementById('profileAvatar').innerHTML = channelName.charAt(0).toUpperCase();
+    document.getElementById('profileVideoCount').textContent = formatNum(channelVideos.length);
+    const grid = document.getElementById('profileVideoGrid');
+    if (channelVideos.length === 0) { grid.innerHTML = `<div class="empty-state"><i class="fas fa-video"></i><h3>ویدیویی ندارد</h3></div>`; return; }
+    grid.innerHTML = channelVideos.map(v => createVideoCardHTML({ ...v, id: v.objectId, uploader: v.uploaderName, timestamp: v.created })).join('');
   } catch(e) { console.error(e); }
 }
 
 async function openChannelProfile() {
   if (!currentChannelId) return;
   if (currentUser && currentChannelId === currentUser.objectId) { switchView('profile'); return; }
-  
-  try {
-    const query = Backendless.DataQueryBuilder.create().setWhereClause(`uploaderId='${currentChannelId}'`);
-    const channelVideos = await Backendless.Data.of("Videos").find(query);
-    
-    // نمایش در صفحه پروفایل
-    const channelName = channelVideos.length > 0 ? (channelVideos[0].uploaderName || 'کانال') : 'کانال';
-    document.getElementById('profileName').textContent = channelName;
-    document.getElementById('profileAvatar').innerHTML = channelName.charAt(0).toUpperCase();
-    document.getElementById('profileVideoCount').textContent = formatNum(channelVideos.length);
-    
-    const grid = document.getElementById('profileVideoGrid');
-    if (channelVideos.length === 0) { grid.innerHTML = `<div class="empty-state"><i class="fas fa-video"></i><h3>ویدیویی ندارد</h3></div>`; return; }
-    grid.innerHTML = channelVideos.map(v => createVideoCardHTML({ ...v, id: v.objectId, uploader: v.uploaderName, timestamp: v.created })).join('');
-    
-    switchView('profile');
-    
-  } catch(e) { console.error(e); }
+  await loadChannelProfile(currentChannelId);
+  switchView('profile');
 }
 
-// ==========================================
-// پلیر
-// ==========================================
 const playerVideo = document.getElementById('playerVideo');
 const playerOverlay = document.getElementById('playerOverlay');
 const playerSpinner = document.getElementById('playerSpinner');
@@ -714,11 +630,7 @@ const playerErrorMsg = document.getElementById('playerErrorMsg');
 function showLoader() { playerOverlay.classList.remove('hidden'); playerSpinner.style.display = 'block'; playerErrorMsg.textContent = ''; }
 function hideLoader() { playerOverlay.classList.add('hidden'); }
 function showError(msg) { playerOverlay.classList.remove('hidden'); playerSpinner.style.display = 'none'; playerErrorMsg.textContent = msg; }
-
-function setupPlayer(url) {
-  playerVideo.removeAttribute('src');
-  playerVideo.src = url; playerVideo.load(); playerVideo.play().catch(()=>{});
-}
+function setupPlayer(url) { playerVideo.removeAttribute('src'); playerVideo.src = url; playerVideo.load(); playerVideo.play().catch(()=>{}); }
 
 playerVideo.addEventListener('waiting', showLoader);
 playerVideo.addEventListener('playing', hideLoader);
@@ -730,23 +642,15 @@ async function openPlayer(id) {
   if (!v) return;
   currentPlayerVideoId = id;
   currentChannelId = v.uploaderId;
-  
   try { Backendless.Data.of("Videos").save({ objectId: id, views: (v.views || 0) + 1 }).catch(()=>{}); } catch(e){}
   v.views++;
-  
   switchView('player'); showLoader(); setupPlayer(v.url);
-  
   document.getElementById('playerTitle').textContent = v.title;
   document.getElementById('playerLikes').textContent = formatNum(v.likes);
   document.getElementById('playerChannelName').textContent = v.uploader || 'کاربر';
   document.getElementById('playerChannelAvatar').textContent = (v.uploader || 'U').charAt(0).toUpperCase();
-  
-  if (currentUser && v.uploaderId === currentUser.objectId) {
-    document.getElementById('ownerActions').classList.add('visible');
-  } else {
-    document.getElementById('ownerActions').classList.remove('visible');
-  }
-
+  if (currentUser && v.uploaderId === currentUser.objectId) document.getElementById('ownerActions').classList.add('visible');
+  else document.getElementById('ownerActions').classList.remove('visible');
   try {
     const q = Backendless.DataQueryBuilder.create().setWhereClause(`videoId='${id}'`).setSortBy("created desc");
     const comments = await Backendless.Data.of("Comments").find(q);
@@ -778,18 +682,9 @@ async function addPlayerComment() {
   const input = document.getElementById('playerCommentInput'); 
   const text = input.value.trim(); 
   if (!text) return;
-  
-  if (/[\u0600-\u06FF]/.test(text)) {
-    toast('❌ فقط کامنت‌های انگلیسی پذیرفته می‌شوند.', true); return;
-  }
-  
+  if (/[\u0600-\u06FF]/.test(text)) { toast('❌ فقط کامنت‌های انگلیسی پذیرفته می‌شوند.', true); return; }
   try {
-    await Backendless.Data.of("Comments").save({
-      videoId: currentPlayerVideoId,
-      userId: currentUser.objectId,
-      userName: getUserName(currentUser),
-      text: text
-    });
+    await Backendless.Data.of("Comments").save({ videoId: currentPlayerVideoId, userId: currentUser.objectId, userName: getUserName(currentUser), text: text });
     input.value = '';
     const q = Backendless.DataQueryBuilder.create().setWhereClause(`videoId='${currentPlayerVideoId}'`).setSortBy("created desc");
     const comments = await Backendless.Data.of("Comments").find(q);
@@ -806,14 +701,45 @@ async function deleteBrokenVideo() {
   } catch(e) { toast('خطا در حذف', true); }
 }
 
-// ==========================================
-// آپلود
-// ==========================================
-async function setupUploaders() {
+function shareVideo() { toast('لینک کپی شد!'); }
+
+async function loadUploadcareSDK() {
+  if (window.__ucSdkLoaded) return true;
   try {
-    const UC = await import('https://cdn.jsdelivr.net/npm/@uploadcare/file-uploader@1/web/file-uploader.min.js');
-    UC.defineComponents(UC);
-    
+    await new Promise((resolve, reject) => {
+      if (document.querySelector('script[data-uc-sdk]')) { resolve(); return; }
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/@uploadcare/file-uploader@1/web/file-uploader.min.js';
+      s.async = true;
+      s.setAttribute('data-uc-sdk', '1');
+      s.onload = () => resolve();
+      s.onerror = (e) => reject(new Error('خطا در بارگذاری SDK آپلودکر'));
+      document.head.appendChild(s);
+    });
+    window.__ucSdkLoaded = true;
+    return true;
+  } catch(err) {
+    console.error('Uploadcare SDK load error:', err);
+    return false;
+  }
+}
+
+async function setupUploaders() {
+  if (uploadersInitialized) return;
+  uploadersInitialized = true;
+  
+  const ok = await loadUploadcareSDK();
+  if (!ok) {
+    toast('خطا در بارگذاری سرویس آپلود. لطفاً اتصال اینترنت را بررسی کنید.', true);
+    uploadersInitialized = false;
+    return;
+  }
+
+  try {
+    if (window.UC && typeof window.UC.defineComponents === 'function') {
+      window.UC.defineComponents(window.UC);
+    }
+
     const rulesCheck = document.getElementById('agreeRules');
     const videoWrapper = document.getElementById('videoWrapper');
     const thumbWrapper = document.getElementById('thumbWrapper');
@@ -823,83 +749,102 @@ async function setupUploaders() {
       else { videoWrapper.classList.add('disabled'); thumbWrapper.classList.add('disabled'); }
     });
 
-    const videoCtx = document.querySelector('uc-upload-ctx-provider[ctx-name="video-uploader"]');
-    videoCtx.addEventListener('common-upload-success', (e) => {
-      if (!currentUser) { openAuth(); return; }
-      const entries = e.detail.successEntries || [];
-      if (!entries.length) return;
-      
-      const entry = entries[0];
-      pendingVideoData = { uuid: entry.uuid, url: entry.cdnUrl, name: entry.name };
-      
-      if (pendingThumbData !== null) { finalizeUpload(); } 
-      else {
-        toast('ویدیو آپلود شد. تصویر پیش‌نمایش را آپلود کنید.');
-        setTimeout(() => {
-          if (pendingVideoData && pendingThumbData === null) { pendingThumbData = 'skip'; finalizeUpload(); }
-        }, 10000);
-      }
-    });
+    videoCtxGlobal = document.querySelector('uc-upload-ctx-provider[ctx-name="video-uploader"]');
+    thumbCtxGlobal = document.querySelector('uc-upload-ctx-provider[ctx-name="thumb-uploader"]');
 
-    const thumbCtx = document.querySelector('uc-upload-ctx-provider[ctx-name="thumb-uploader"]');
-    thumbCtx.addEventListener('common-upload-success', (e) => {
-      const entries = e.detail.successEntries || [];
-      if (!entries.length) return;
-      pendingThumbData = entries[0].cdnUrl;
-      toast('تصویر آپلود شد.');
-      if (pendingVideoData) { finalizeUpload(); }
-    });
+    if (videoCtxGlobal) {
+      videoCtxGlobal.addEventListener('common-upload-success', (e) => {
+        if (!currentUser) { openAuth(); return; }
+        const entries = e.detail.successEntries || [];
+        if (!entries.length) return;
+        const entry = entries[0];
+        pendingVideoData = { uuid: entry.uuid, url: entry.cdnUrl, name: entry.name };
+        if (pendingThumbData !== null) { finalizeUpload(); } 
+        else {
+          toast('ویدیو آپلود شد. تصویر پیش‌نمایش را آپلود کنید.');
+          setTimeout(() => {
+            if (pendingVideoData && pendingThumbData === null) { pendingThumbData = 'skip'; finalizeUpload(); }
+          }, 10000);
+        }
+      });
+    }
 
-    window.finalizeUpload = async function() {
-      if (!pendingVideoData || !currentUser) return;
-      
-      const title = document.getElementById('uploadTitle').value.trim() || pendingVideoData.name.replace(/\.[^/.]+$/, "");
-      const thumbnailUrl = (pendingThumbData && pendingThumbData !== 'skip') ? pendingThumbData : null;
-
-      try {
-        await Backendless.Data.of("Videos").save({
-          title: title, videoUuid: pendingVideoData.uuid, videoUrl: pendingVideoData.url,
-          thumbnailUrl: thumbnailUrl, type: currentUploadType,
-          uploaderId: currentUser.objectId, uploaderName: getUserName(currentUser),
-          views: 0, likes: 0
-        });
-        
-        toast('ویدیو روی سرور ذخیره شد!');
-        loadVideosFromServer();
-        
-        try { videoCtx.clearAll(); } catch(err){}
-        try { thumbCtx.clearAll(); } catch(err){}
-        pendingVideoData = null; pendingThumbData = null;
-        document.getElementById('uploadTitle').value = '';
-        rulesCheck.checked = false;
-        videoWrapper.classList.add('disabled'); thumbWrapper.classList.add('disabled');
-        
-        switchView('home');
-      } catch(err) { 
-        console.error(err);
-        toast('خطا در ذخیره در سرور: ' + err.message, true); 
-      }
-    };
-
-  } catch(err) { console.error("Upload Init Error:", err); }
+    if (thumbCtxGlobal) {
+      thumbCtxGlobal.addEventListener('common-upload-success', (e) => {
+        const entries = e.detail.successEntries || [];
+        if (!entries.length) return;
+        pendingThumbData = entries[0].cdnUrl;
+        toast('تصویر آپلود شد.');
+        if (pendingVideoData) { finalizeUpload(); }
+      });
+    }
+  } catch(err) {
+    console.error("Upload Init Error:", err);
+    toast('خطا در راه‌اندازی آپلودر: ' + err.message, true);
+    uploadersInitialized = false;
+  }
 }
 
-// ==========================================
-// پخش زنده (Live Stream)
-// ==========================================
+async function setupAvatarUploader() {
+  if (avatarUploaderInitialized) return;
+  avatarUploaderInitialized = true;
+  const ok = await loadUploadcareSDK();
+  if (!ok) { avatarUploaderInitialized = false; return; }
+  try {
+    if (window.UC && typeof window.UC.defineComponents === 'function') {
+      window.UC.defineComponents(window.UC);
+    }
+    const avatarCtx = document.querySelector('uc-upload-ctx-provider[ctx-name="avatar-uploader"]');
+    if (!avatarCtx) return;
+    avatarCtx.addEventListener('common-upload-success', (e) => {
+      const entries = e.detail.successEntries || [];
+      if (!entries.length) return;
+      pendingAvatarData = entries[0].cdnUrl;
+      toast('آواتار آپلود شد. دکمه ذخیره را بزنید.');
+    });
+  } catch(e) { console.error(e); avatarUploaderInitialized = false; }
+}
+
+async function finalizeUpload() {
+  if (isFinalizing) return;
+  if (!pendingVideoData || !currentUser) return;
+  isFinalizing = true;
+  try {
+    const title = document.getElementById('uploadTitle').value.trim() || pendingVideoData.name.replace(/\.[^/.]+$/, "");
+    const thumbnailUrl = (pendingThumbData && pendingThumbData !== 'skip') ? pendingThumbData : null;
+    await Backendless.Data.of("Videos").save({
+      title: title, videoUuid: pendingVideoData.uuid, videoUrl: pendingVideoData.url,
+      thumbnailUrl: thumbnailUrl, type: currentUploadType,
+      uploaderId: currentUser.objectId, uploaderName: getUserName(currentUser),
+      views: 0, likes: 0
+    });
+    toast('ویدیو روی سرور ذخیره شد!');
+    loadVideosFromServer();
+    try { videoCtxGlobal && videoCtxGlobal.clearAll(); } catch(err){}
+    try { thumbCtxGlobal && thumbCtxGlobal.clearAll(); } catch(err){}
+    pendingVideoData = null; pendingThumbData = null;
+    document.getElementById('uploadTitle').value = '';
+    document.getElementById('agreeRules').checked = false;
+    document.getElementById('videoWrapper').classList.add('disabled');
+    document.getElementById('thumbWrapper').classList.add('disabled');
+    switchView('home');
+  } catch(err) { 
+    console.error(err);
+    toast('خطا در ذخیره در سرور: ' + err.message, true); 
+  } finally {
+    isFinalizing = false;
+  }
+}
+
 async function startLiveStream() {
   if (!currentUser) { openAuth(); return; }
-  
   try {
-    // درخواست دسترسی به دوربین و میکروفون
     liveStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
     const videoEl = document.getElementById('liveVideo');
     videoEl.srcObject = liveStream;
-    
     document.getElementById('startLiveBtn').style.display = 'none';
     document.getElementById('stopLiveBtn').style.display = 'flex';
     document.getElementById('liveBadge').style.display = 'flex';
-    
     toast('پخش زنده شروع شد!');
   } catch (err) {
     console.error(err);
@@ -908,28 +853,18 @@ async function startLiveStream() {
 }
 
 function stopLiveStream() {
-  if (liveStream) {
-    liveStream.getTracks().forEach(track => track.stop());
-    liveStream = null;
-  }
-  const videoEl = document.getElementById('liveVideo');
-  videoEl.srcObject = null;
-  
+  if (liveStream) { liveStream.getTracks().forEach(track => track.stop()); liveStream = null; }
+  document.getElementById('liveVideo').srcObject = null;
   document.getElementById('startLiveBtn').style.display = 'flex';
   document.getElementById('stopLiveBtn').style.display = 'none';
   document.getElementById('liveBadge').style.display = 'none';
-  
   toast('پخش زنده متوقف شد.');
 }
 
-// ==========================================
-// ناوبری
-// ==========================================
 function switchView(viewName) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.querySelectorAll('video').forEach(v => { try { v.pause(); } catch(e){} });
-  
   if (viewName === 'home') { document.getElementById('viewHome').classList.add('active'); document.getElementById('navHome').classList.add('active'); }
   else if (viewName === 'shorts') { document.getElementById('viewShorts').classList.add('active'); document.getElementById('navShorts').classList.add('active'); }
   else if (viewName === 'live') { 
@@ -962,8 +897,17 @@ document.getElementById('navProfile').addEventListener('click', () => switchView
 window.onload = () => {
   checkUserSession();
   loadVideosFromServer();
-  setupUploaders();
-  setupAvatarUploader();
+  loadUploadcareSDK().then(ok => {
+    if (ok) {
+      try {
+        if (window.UC && typeof window.UC.defineComponents === 'function') window.UC.defineComponents(window.UC);
+      } catch(e) { console.error(e); }
+      setupUploaders();
+      setupAvatarUploader();
+    } else {
+      console.warn('Uploadcare SDK not loaded; uploads disabled until refresh.');
+    }
+  });
   updateTopbar();
 };
 </script>

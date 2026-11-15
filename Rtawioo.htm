@@ -300,10 +300,6 @@ body::before{content:'';position:fixed;inset:-50%;background:radial-gradient(cir
 <div class="toast" id="toast"></div>
 <script>
 "use strict";
-/* ============================================================
-   Vigram Studio — Frontend
-   ساختار مسیر فایل‌ها: sites/{userId}/{siteId}/index.html
-   ============================================================ */
 const APP_ID = "C50651A5-1DFC-4BA1-AA34-B4444E9AC5A5";
 const API_KEY = "9303E7E8-BAF9-4023-A34B-E4E024192785";
 try { if (typeof Backendless !== 'undefined') Backendless.initApp(APP_ID, API_KEY); } catch (e) { console.error(e); }
@@ -336,7 +332,7 @@ const BLOCK_TYPES = {
 };
 const STORAGE_PREFIX='vigram_sites_', PUBLIC_INDEX_KEY='vigram_public_index', DELETED_KEY='vigram_deleted_sites';
 const TABLE='VigramSites';
-const SITES_ROOT = 'sites'; // ساختار گیت‌هابی: sites/{userId}/{siteId}/index.html
+const SITES_ROOT = 'sites';
 
 const $ = id => document.getElementById(id);
 function toast(msg, type) {
@@ -369,28 +365,16 @@ function markAsDeleted(id){const d=getDeletedSites();if(!d.includes(id))d.push(i
 const isDeleted = id => getDeletedSites().includes(id);
 const hasBL = () => typeof Backendless !== 'undefined';
 
-/* ============================================================
-   مسیر فایل‌ها به سبک گیت‌هاب:
-   sites/
-     └── {userId}/
-         └── {siteId}/
-             └── index.html
-   ============================================================ */
 function siteDir(site){
-  // پوشه اختصاصی سایت: sites/{userId}/{siteId}
   const ownerId = (site && (site.ownerId || site.userId)) || (currentUser && (currentUser.objectId || currentUser.id)) || 'unknown';
   const siteId = (site && site.id) || 'unknown';
   return `${SITES_ROOT}/${ownerId}/${siteId}`;
 }
-function siteFileName(){
-  return 'index.html';
-}
-// سازگاری با کد قبلی:
+function siteFileName(){ return 'index.html'; }
 const sitePath = s => siteDir(s);
 const siteFile = s => siteFileName();
 
 async function uploadFile(dir, name, content, type){
-  // پوشه را می‌سازیم (upload با overwrite=true خودش پوشه را می‌سازد)
   try { await Backendless.Files.remove(dir + '/' + name); } catch(e){}
   const f = new File([content], name, { type });
   const res = await Backendless.Files.upload(f, dir, true);
@@ -461,7 +445,8 @@ const SECURITY_SCAN_PATTERNS = [
   {re:/<script\b[^>]*src\s*=\s*['"`](?:https?:)?\/\/(?!cdn\.jsdelivr\.net|cdnjs\.cloudflare\.com)/gi, msg:'اسکریپت از دامنه غیرمجاز'},
 ];
 
-function runSecurityScan(code, opts){
+/* ✅ اسکنر اصلی (low-level): فقط یک‌بار تعریف شده — بدون بازگشت */
+function performSecurityScan(code, opts){
   opts = opts || {};
   const findings = [];
   if(!code) return {ok:true, findings:[]};
@@ -491,7 +476,6 @@ function buildPermissionsPolicy(sec){
   return [media, geo, 'payment=()', 'usb=()'].join(', ');
 }
 
-/* ---------- AUTH ---------- */
 function toggleAuthMode(){
   isLoginMode = !isLoginMode;
   $('authUsername').style.display = isLoginMode?'none':'block';
@@ -631,7 +615,7 @@ async function uploadHtmlAndPublish(){
     let content = await pendingUploadFile.text();
     content = sanitizeUserHtml(content);
     if(currentSecurity.preflight){
-      const scan = runSecurityScan(content, {allowDomains: currentSecurity.allowDomains});
+      const scan = performSecurityScan(content, {allowDomains: currentSecurity.allowDomains});
       if(!scan.ok){
         const proceed = confirm('کد خطرناک تشخیص داده شد:\n'+scan.findings.map(f=>'• '+f.msg).join('\n')+'\n\nادامه می‌دهی؟');
         if(!proceed){ btn.innerHTML=orig; btn.disabled=false; return; }
@@ -813,7 +797,7 @@ async function handleEditorHtmlFile(input){
     let content = await f.text();
     content = sanitizeUserHtml(content);
     if(currentSecurity.preflight){
-      const scan = runSecurityScan(content, {allowDomains: currentSecurity.allowDomains});
+      const scan = performSecurityScan(content, {allowDomains: currentSecurity.allowDomains});
       if(!scan.ok && !confirm('کد خطرناک:\n'+scan.findings.map(x=>'• '+x.msg).join('\n')+'\n\nادامه؟')) return;
     }
     $('htmlCodeEditor').value = content;
@@ -825,7 +809,7 @@ function applyHtmlCode(){
   let clean = $('htmlCodeEditor').value;
   clean = sanitizeUserHtml(clean);
   if(currentSecurity.preflight){
-    const scan = runSecurityScan(clean, {allowDomains: currentSecurity.allowDomains});
+    const scan = performSecurityScan(clean, {allowDomains: currentSecurity.allowDomains});
     if(!scan.ok){
       console.warn('security findings:', scan.findings);
       logConsole('warn', 'اسکن امنیتی: '+scan.findings.map(f=>f.msg).join(' | '));
@@ -836,9 +820,6 @@ function applyHtmlCode(){
 }
 function resetToBuilder(){ editingSite.mode='builder'; updateModeBadge(); reloadPreviewFrame(); toast('به حالت بلوکی برگشت','info'); }
 
-/* ============================================================
-   PUBLISH PIPELINE
-   ============================================================ */
 function antiTamperHead(sec){
   if(!sec || !sec.protect) return '';
   return [
@@ -1120,7 +1101,6 @@ function siteInner(site){
   return inner;
 }
 
-/* ---------- PREVIEW + CONSOLE ---------- */
 function logConsole(level, msg){
   const body = $('consoleBody'); if(!body) return;
   const line = document.createElement('div');
@@ -1166,10 +1146,11 @@ window.addEventListener('message', function(ev){
   else if(t === 'info' || t === 'log') logConsole('info', d.msg||'');
 });
 
+/* ✅ هندلر دکمهٔ «اسکن امنیتی» — از performSecurityScan استفاده می‌کند، بدون بازگشت */
 function runSecurityScan(){
   if(!editingSite) return;
   const code = (editingSite.mode==='html' && editingSite.htmlContent) ? editingSite.htmlContent : siteInner(editingSite);
-  const scan = runSecurityScan(code, {allowDomains: currentSecurity.allowDomains});
+  const scan = performSecurityScan(code, {allowDomains: currentSecurity.allowDomains});
   if(scan.ok){ logConsole('success', 'اسکن امنیتی: هیچ الگوی مشکوکی یافت نشد.'); toast('کد پاک است','success'); }
   else{
     scan.findings.forEach(f=>logConsole('error', 'اسکن: '+f.msg + (f.sample?' ['+f.sample+']':'')));
@@ -1178,7 +1159,6 @@ function runSecurityScan(){
   toggleConsolePanel();
 }
 
-/* ---------- PUBLISH ---------- */
 function collectEditing(){
   editingSite.title = ($('siteTitleInput').value||'').trim()||'سایت بدون نام';
   editingSite.slug = slugify($('siteSlugInput').value)||slugify(editingSite.title)||'site-'+Date.now();
@@ -1196,7 +1176,6 @@ function commitEditing(){
   return userSites.find(s=>s.id===editingSite.id);
 }
 
-/* انتشار با ساختار گیت‌هابی: sites/{userId}/{siteId}/index.html */
 async function publishSite(site){
   if(!hasBL()) throw new Error('سرور متصل نیست');
   const html = await buildPublished(site);
@@ -1215,7 +1194,7 @@ async function publishNow(){
   collectEditing();
   if(currentSecurity.preflight){
     const code = (editingSite.mode==='html' && editingSite.htmlContent) ? editingSite.htmlContent : siteInner(editingSite);
-    const scan = runSecurityScan(code, {allowDomains: currentSecurity.allowDomains});
+    const scan = performSecurityScan(code, {allowDomains: currentSecurity.allowDomains});
     if(!scan.ok){
       const ok = confirm('اسکن امنیتی:\n'+scan.findings.map(f=>'• '+f.msg).join('\n')+'\n\nادامه انتشار؟');
       if(!ok) return;
@@ -1238,18 +1217,15 @@ function generate404HTML(){
 async function takeOffline(site){
   if(hasBL() && site.liveUrl){
     try{
-      // جایگزینی index.html با صفحه ۴۰۴ (مسیر یکسان: sites/{userId}/{siteId}/index.html)
       await uploadFile(siteDir(site), siteFileName(), generate404HTML(), 'text/html');
     }catch(e){ console.warn(e); }
   }
 }
 async function deleteSiteFiles(site){
   if(!hasBL()) return;
-  // حذف پوشه کامل سایت
   try{
     await Backendless.Files.remove(siteDir(site));
   }catch(e){
-    // اگر حذف پوشه پشتیبانی نشد، حداقل index.html را حذف کنیم
     try{ await Backendless.Files.remove(siteDir(site) + '/' + siteFileName()); }catch(x){}
   }
 }

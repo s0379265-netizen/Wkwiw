@@ -2,970 +2,1326 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
-<title>Vigram | پلتفرم ویدیویی</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Vigram Studio — سایت‌ساز حرفه‌ای</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://api.backendless.com" crossorigin>
 <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@uploadcare/file-uploader@1/web/uc-file-uploader-regular.min.css">
 <script src="https://api.backendless.com/sdk/js/latest/backendless.min.js"></script>
-
-<script>
-(function(){
-    if(typeof window.customElements.getName === 'function') return;
-    var registry = new Map();
-    var origDefine = window.customElements.define.bind(window.customElements);
-    window.customElements.define = function(name, constructor, options){
-        try { registry.set(constructor, name); } catch(e){}
-        return origDefine(name, constructor, options);
-    };
-    window.customElements.getName = function(constructor){
-        if(!constructor) return null;
-        if(registry.has(constructor)) return registry.get(constructor);
-        try { if(constructor.name) return constructor.name; } catch(e){}
-        return null;
-    };
-})();
-</script>
-
 <style>
-  :root {
-    --bg: #0f0f0f; --card: rgba(30, 30, 30, 0.6); --card-hover: rgba(44, 44, 44, 0.8);
-    --text: #f1f1f1; --muted: #a0a0a0; --red: #ff0000; --border: rgba(255,255,255,0.08);
-    --radius: 16px; --transition: 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    --glass-blur: blur(15px);
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Vazirmatn', sans-serif; -webkit-tap-highlight-color: transparent; }
-  body { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; justify-content: center; overflow-x: hidden; }
-  
-  .app-wrapper { width: 100%; max-width: 1200px; background: var(--bg); min-height: 100vh; position: relative; padding-bottom: 80px; display: flex; flex-direction: column; }
-  
-  /* Topbar (Glassmorphism) */
-  .topbar { background: rgba(15, 15, 15, 0.75); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); border-bottom: 1px solid var(--border); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; gap: 15px; }
-  .logo { font-weight: 900; font-size: 24px; display: flex; align-items: center; gap: 8px; cursor: pointer; letter-spacing: -0.5px; }
-  .logo i { color: var(--red); font-size: 28px; text-shadow: 0 0 20px rgba(255,0,0,0.4); }
-  .search-bar { flex: 1; max-width: 500px; display: flex; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 30px; overflow: hidden; transition: var(--transition); }
-  .search-bar:focus-within { border-color: var(--red); box-shadow: 0 0 15px rgba(255,0,0,0.1); }
-  .search-bar input { flex: 1; background: transparent; border: none; padding: 10px 20px; color: var(--text); outline: none; font-size: 14px; }
-  .search-bar button { background: transparent; border: none; padding: 0 20px; color: var(--muted); cursor: pointer; transition: 0.2s; }
-  .search-bar button:hover { color: var(--text); }
-  .top-actions { display: flex; gap: 18px; font-size: 20px; align-items: center; }
-  .auth-btn { background: var(--red); color: white; border: none; padding: 8px 20px; border-radius: 25px; font-weight: bold; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 6px; transition: var(--transition); box-shadow: 0 4px 15px rgba(255,0,0,0.3); }
-  .auth-btn:hover { transform: translateY(-2px); }
-  .user-avatar-top { width: 38px; height: 38px; border-radius: 50%; background: var(--card); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; cursor: pointer; border: 2px solid var(--border); overflow: hidden; }
-  .user-avatar-top img { width: 100%; height: 100%; object-fit: cover; }
-
-  /* Views */
-  .view { display: none; animation: fadeSlide 0.4s ease-out; flex: 1; }
-  .view.active { display: block; }
-  @keyframes fadeSlide { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-
-  /* Video Grid */
-  .video-grid { display: grid; grid-template-columns: 1fr; gap: 24px; padding: 20px; }
-  @media (min-width: 600px) { .video-grid { grid-template-columns: repeat(2, 1fr); } }
-  @media (min-width: 1000px) { .video-grid { grid-template-columns: repeat(3, 1fr); } }
-  
-  .video-card { cursor: pointer; border-radius: var(--radius); overflow: hidden; background: var(--card); transition: var(--transition); border: 1px solid var(--border); position: relative; backdrop-filter: var(--glass-blur); }
-  .video-card:hover { transform: translateY(-5px); border-color: rgba(255,255,255,0.2); box-shadow: 0 15px 30px rgba(0,0,0,0.5); }
-  .video-card-thumb { width: 100%; aspect-ratio: 16/9; background: #000; position: relative; overflow: hidden; }
-  .video-card-thumb img { width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.5s; }
-  .video-card-thumb img.loaded { opacity: 1; }
-  .thumb-skeleton { position: absolute; inset: 0; background: linear-gradient(90deg, #1e1e1e 25%, #2a2a2a 50%, #1e1e1e 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; z-index: 1; }
-  @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
-
-  .video-card-info { display: flex; gap: 14px; padding: 16px; }
-  .channel-avatar { width: 42px; height: 42px; border-radius: 50%; background: var(--card-hover); display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; overflow: hidden; border: 1px solid var(--border); }
-  .channel-avatar img { width: 100%; height: 100%; object-fit: cover; }
-  .video-meta { flex: 1; overflow: hidden; }
-  .video-title { font-size: 16px; font-weight: 700; line-height: 1.5; margin-bottom: 6px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-  .video-channel-name { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
-  .video-stats { font-size: 12px; color: var(--muted); }
-
-  /* Shorts */
-  #viewShorts { background: #000; padding: 0; }
-  .shorts-feed { height: calc(100vh - 80px); overflow-y: auto; scroll-snap-type: y mandatory; scrollbar-width: none; }
-  .shorts-feed::-webkit-scrollbar { display: none; }
-  .short-page { height: calc(100vh - 80px); scroll-snap-align: start; position: relative; display: flex; align-items: center; justify-content: center; background: #000; }
-  .short-page video { width: 100%; height: 100%; object-fit: contain; }
-  .short-side-actions { position: absolute; bottom: 40px; right: 20px; display: flex; flex-direction: column; gap: 20px; align-items: center; z-index: 10; }
-  .short-action-btn { background: rgba(255,255,255,0.1); backdrop-filter: var(--glass-blur); border: 1px solid var(--border); color: white; width: 55px; height: 55px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: var(--transition); }
-  .short-action-btn:hover { background: rgba(255,255,255,0.2); transform: scale(1.1); }
-  .short-action-btn i { font-size: 24px; }
-  .short-action-btn span { font-size: 12px; margin-top: 4px; font-weight: bold; }
-  .short-info { position: absolute; bottom: 40px; left: 20px; right: 90px; z-index: 10; text-shadow: 0 2px 10px rgba(0,0,0,0.9); }
-  .short-info h3 { font-size: 18px; margin-bottom: 8px; font-weight: 800; }
-  .short-info p { font-size: 14px; color: #ddd; }
-
-  /* Player */
-  #viewPlayer { background: var(--bg); }
-  .player-container { width: 100%; aspect-ratio: 16/9; background: #000; position: relative; display: flex; align-items: center; justify-content: center; }
-  .player-container video { width: 100%; height: 100%; object-fit: contain; z-index: 2; }
-  
-  .player-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.85); z-index: 5; transition: opacity 0.3s; }
-  .player-overlay.hidden { opacity: 0; pointer-events: none; }
-  .spinner { width: 50px; height: 50px; border: 4px solid rgba(255,255,255,0.1); border-top-color: var(--red); border-radius: 50%; animation: spin 1s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .error-msg { color: var(--muted); font-size: 14px; margin-top: 15px; text-align: center; }
-
-  .player-details { padding: 20px; background: var(--bg); }
-  .player-title-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
-  .player-title { font-size: 20px; font-weight: 800; line-height: 1.5; flex: 1; margin-left: 10px; }
-  
-  .owner-actions { display: none; gap: 10px; }
-  .owner-actions.visible { display: flex; }
-  .btn-delete-video { background: rgba(255,0,0,0.1); color: var(--red); border: 1px solid var(--red); padding: 8px 14px; border-radius: 10px; font-size: 13px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 6px; transition: var(--transition); }
-  .btn-delete-video:hover { background: var(--red); color: white; }
-
-  .player-actions { display: flex; gap: 12px; margin-bottom: 25px; border-bottom: 1px solid var(--border); padding-bottom: 20px; overflow-x: auto; scrollbar-width: none; }
-  .player-actions::-webkit-scrollbar { display: none; }
-  .player-action-btn { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 10px 18px; border-radius: 30px; display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer; font-weight: 600; white-space: nowrap; transition: var(--transition); }
-  .player-action-btn:hover { background: var(--card-hover); }
-  .player-action-btn.liked { background: rgba(255,0,0,0.15); color: var(--red); border-color: var(--red); }
-  
-  .player-channel { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; }
-  .subscribe-btn { background: var(--text); color: var(--bg); border: none; padding: 10px 22px; border-radius: 25px; font-weight: 800; cursor: pointer; font-size: 13px; transition: var(--transition); }
-  .subscribe-btn:hover { transform: scale(1.05); }
-
-  .comments-section { padding: 0; }
-  .comment-input-wrapper { display: flex; gap: 12px; margin-bottom: 25px; align-items: center; }
-  .comment-input-wrapper input { flex: 1; background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 14px 20px; border-radius: 30px; outline: none; font-size: 14px; transition: var(--transition); }
-  .comment-input-wrapper input:focus { border-color: var(--red); }
-  .comment-input-wrapper button { background: var(--red); color: white; border: none; padding: 12px 24px; border-radius: 30px; cursor: pointer; font-weight: bold; transition: var(--transition); }
-  .comment-input-wrapper button:hover { transform: scale(1.05); }
-  .comment-item { display: flex; gap: 12px; margin-bottom: 18px; }
-
-  /* Upload */
-  .upload-container { max-width: 600px; margin: 0 auto; padding: 25px; }
-  .upload-box { background: var(--card); border-radius: var(--radius); padding: 30px; border: 1px solid var(--border); backdrop-filter: var(--glass-blur); }
-  .form-group { margin-bottom: 25px; }
-  .form-group label { display: block; font-size: 14px; color: var(--muted); margin-bottom: 10px; font-weight: 600; }
-  .form-group input[type="text"] { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border); padding: 15px; border-radius: 12px; color: var(--text); outline: none; font-size: 15px; transition: var(--transition); }
-  .form-group input[type="text"]:focus { border-color: var(--red); }
-  .type-selector { display: flex; gap: 12px; margin-bottom: 25px; }
-  .type-btn { flex: 1; padding: 15px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: var(--text); border-radius: 12px; cursor: pointer; text-align: center; font-weight: 600; transition: var(--transition); }
-  .type-btn.active { border-color: var(--red); background: rgba(255,0,0,0.1); color: var(--red); }
-
-  .upload-section-title { font-size: 15px; font-weight: bold; margin-bottom: 12px; color: var(--text); display: flex; align-items: center; gap: 10px; }
-  .upload-section-title .badge { background: var(--red); color: white; font-size: 11px; padding: 3px 8px; border-radius: 6px; }
-  
-  .uc-wrapper { position: relative; width: 100%; min-height: 180px; border-radius: var(--radius); overflow: hidden; background: rgba(0,0,0,0.3); border: 2px dashed var(--border); transition: var(--transition); margin-bottom: 25px; }
-  .uc-wrapper.disabled { opacity: 0.5; pointer-events: none; }
-  
-  .checkbox-group { display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--muted); cursor: pointer; margin-top: 15px; }
-  .checkbox-group input { width: 20px; height: 20px; accent-color: var(--red); cursor: pointer; }
-  
-  uc-file-uploader-regular { --uc-color-primary: #ff0000; --uc-color-primary-hover: #cc0000; --uc-color-background: #1e1e1e; --uc-color-text: #f1f1f1; --uc-color-border: rgba(255,255,255,0.1); --uc-border-radius: 12px; --uc-font-family: 'Vazirmatn', sans-serif; }
-
-  /* Profile */
-  .profile-header { display: flex; flex-direction: column; align-items: center; padding: 50px 20px; background: linear-gradient(180deg, rgba(255,0,0,0.08) 0%, transparent 100%); border-bottom: 1px solid var(--border); }
-  .profile-avatar { width: 110px; height: 110px; border-radius: 50%; background: var(--card); display: flex; align-items: center; justify-content: center; font-size: 45px; font-weight: bold; margin-bottom: 20px; border: 3px solid var(--red); overflow: hidden; box-shadow: 0 0 30px rgba(255,0,0,0.2); }
-  .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
-  .profile-name { font-size: 26px; font-weight: 900; margin-bottom: 10px; }
-  .profile-stats { display: flex; gap: 25px; color: var(--muted); font-size: 15px; font-weight: 600; margin-bottom: 20px; }
-  .edit-profile-btn { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 12px 24px; border-radius: 30px; cursor: pointer; font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 8px; transition: var(--transition); }
-  .edit-profile-btn:hover { background: var(--card-hover); }
-
-  /* Bottom Nav */
-  .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; margin: 0 auto; max-width: 1200px; background: rgba(15, 15, 15, 0.85); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 10px 0; padding-bottom: max(10px, env(safe-area-inset-bottom)); z-index: 100; }
-  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 5px; color: var(--muted); background: none; border: none; font-size: 12px; cursor: pointer; width: 20%; padding: 5px 0; transition: var(--transition); }
-  .nav-item i { font-size: 24px; transition: var(--transition); }
-  .nav-item.active { color: var(--text); }
-  .nav-item.active i { color: var(--red); transform: translateY(-3px); }
-
-  /* Modals */
-  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(10px); }
-  .modal-overlay.show { display: flex; }
-  .modal-box { background: var(--card); padding: 35px; border-radius: 20px; width: 100%; max-width: 420px; text-align: center; border: 1px solid var(--border); position: relative; backdrop-filter: var(--glass-blur); }
-  .modal-box h2 { margin-bottom: 25px; color: var(--red); font-size: 22px; }
-  .modal-box input { width: 100%; padding: 14px; margin-bottom: 18px; border-radius: 12px; border: 1px solid var(--border); background: rgba(0,0,0,0.3); color: white; outline: none; font-size: 14px; transition: var(--transition); }
-  .modal-box input:focus { border-color: var(--red); }
-  .modal-box button { width: 100%; padding: 14px; background: var(--red); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; margin-bottom: 12px; transition: var(--transition); }
-  .modal-box button:hover { transform: scale(1.02); }
-  .modal-switch { color: var(--muted); font-size: 14px; cursor: pointer; transition: 0.2s; }
-  .modal-switch:hover { color: var(--text); }
-  .close-modal { position: absolute; top: 20px; right: 20px; background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
-
-  /* Live Stream */
-  .live-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-  .live-video-wrapper { position: relative; width: 100%; max-width: 800px; aspect-ratio: 16/9; background: #000; border-radius: var(--radius); overflow: hidden; border: 2px solid var(--red); box-shadow: 0 0 30px rgba(255,0,0,0.3); }
-  .live-video-wrapper video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); /* آینه برای دوربین سلفی */ }
-  .live-badge { position: absolute; top: 15px; left: 15px; background: var(--red); color: white; padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: bold; display: flex; align-items: center; gap: 6px; animation: pulse 1.5s infinite; }
-  @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-  .live-controls { display: flex; gap: 15px; margin-top: 25px; }
-  .live-control-btn { padding: 15px 30px; border-radius: 30px; border: none; font-weight: bold; cursor: pointer; font-size: 15px; display: flex; align-items: center; gap: 10px; transition: var(--transition); }
-  .btn-start-live { background: var(--red); color: white; }
-  .btn-stop-live { background: var(--card); color: var(--text); border: 1px solid var(--border); }
-  .btn-start-live:hover { transform: scale(1.05); box-shadow: 0 10px 20px rgba(255,0,0,0.4); }
-
-  .toast { position: fixed; bottom: 100px; left: 50%; transform: translate(-50%, 20px); background: var(--text); color: var(--bg); padding: 14px 28px; border-radius: 30px; font-weight: 700; font-size: 14px; opacity: 0; pointer-events: none; transition: all 0.3s; z-index: 999; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-  .toast.show { opacity: 1; transform: translate(-50%, 0); }
-  .toast.error { background: var(--red); color: white; }
-  .empty-state { text-align: center; padding: 80px 20px; color: var(--muted); grid-column: 1/-1; }
+:root{--bg:#08080e;--surface:rgba(18,18,30,.78);--surface-2:rgba(30,30,48,.92);--text:#f8f8fc;--text-2:#b4b4c8;--muted:#6b6b85;--grad-1:#6366f1;--grad-2:#a855f7;--grad-3:#ec4899;--accent:#22d3ee;--success:#22c55e;--danger:#ef4444;--warning:#f59e0b;--border:rgba(255,255,255,.07);--border-strong:rgba(255,255,255,.15);--transition:.35s cubic-bezier(.22,1,.36,1);--brand-grad:linear-gradient(135deg,#6366f1,#a855f7,#ec4899);--glass:blur(26px) saturate(200%)}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Vazirmatn',sans-serif;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:-50%;background:radial-gradient(circle at 15% 15%,rgba(99,102,241,.15),transparent 40%),radial-gradient(circle at 85% 25%,rgba(168,85,247,.13),transparent 40%),radial-gradient(circle at 50% 90%,rgba(236,72,153,.1),transparent 45%);z-index:-2;animation:ambient 25s ease-in-out infinite alternate}
+@keyframes ambient{0%{transform:translate(0,0) rotate(0) scale(1)}100%{transform:translate(-30px,-20px) rotate(6deg) scale(1.1)}}
+.boot{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;transition:opacity .6s,visibility .6s}
+.boot.done{opacity:0;visibility:hidden;pointer-events:none}
+.boot-logo{width:96px;height:96px;border-radius:28px;background:var(--brand-grad);display:flex;align-items:center;justify-content:center;font-size:42px;color:#fff;box-shadow:0 0 80px rgba(99,102,241,.5);animation:bootPulse 2s infinite}
+@keyframes bootPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.boot-title{font-size:32px;font-weight:900;letter-spacing:-2px;background:var(--brand-grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.boot-status{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px}
+.boot-dot{width:8px;height:8px;border-radius:50%;background:var(--grad-1);animation:bootDot 1.4s infinite}
+@keyframes bootDot{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.3)}}
+.app-shell{display:flex;min-height:100vh}
+.sidebar{width:250px;background:rgba(8,8,14,.78);backdrop-filter:var(--glass);border-left:1px solid var(--border);padding:20px 14px;position:fixed;top:0;right:0;bottom:0;z-index:100;display:flex;flex-direction:column;overflow-y:auto;scrollbar-width:none}
+.sidebar::-webkit-scrollbar{display:none}
+.main{flex:1;margin-right:250px;min-height:100vh;padding-bottom:40px}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 6px 20px;cursor:pointer;border-bottom:1px solid var(--border);margin-bottom:18px}
+.brand-mark{width:38px;height:38px;border-radius:12px;background:var(--brand-grad);display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;box-shadow:0 0 20px rgba(99,102,241,.4);flex-shrink:0}
+.brand-name{font-size:17px;font-weight:900;letter-spacing:-.6px;background:linear-gradient(135deg,#fff,var(--grad-1),var(--grad-2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.brand-sub{font-size:9px;color:var(--muted);font-weight:600;letter-spacing:1px;margin-top:1px}
+.nav-group{margin-bottom:16px}.nav-group-title{font-size:9px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;padding:0 10px;margin-bottom:6px}
+.nav-link{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;color:var(--text-2);font-size:12px;font-weight:600;cursor:pointer;transition:var(--transition);margin-bottom:2px;border:none;background:transparent;width:100%;text-align:right;font-family:inherit}
+.nav-link i{font-size:15px;width:18px}.nav-link:hover{background:var(--surface);color:var(--text)}
+.nav-link.active{background:linear-gradient(135deg,rgba(99,102,241,.18),rgba(168,85,247,.15));color:var(--text)}.nav-link.active i{color:var(--grad-1)}
+.user-card{margin-top:auto;padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:12px;display:flex;align-items:center;gap:8px}
+.user-avatar{width:32px;height:32px;border-radius:9px;background:var(--brand-grad);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#fff;flex-shrink:0}
+.user-info{flex:1;overflow:hidden}.user-name{font-size:11px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.user-email{font-size:9px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.logout-btn{background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:4px}.logout-btn:hover{color:var(--danger)}
+.topbar{background:rgba(8,8,14,.65);backdrop-filter:var(--glass);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:90;gap:14px;flex-wrap:wrap}
+.topbar-left{display:flex;align-items:center;gap:12px}.page-title{font-size:17px;font-weight:900;letter-spacing:-.5px}.topbar-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{padding:9px 16px;border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:6px;transition:var(--transition);font-family:inherit;color:var(--text)}
+.btn-primary{background:var(--brand-grad);color:#fff;box-shadow:0 4px 18px rgba(99,102,241,.35)}.btn-primary:hover{transform:translateY(-1px)}.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-ghost{background:var(--surface);color:var(--text);border:1px solid var(--border)}.btn-ghost:hover{background:var(--surface-2);border-color:var(--grad-1)}
+.btn-success{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;box-shadow:0 4px 18px rgba(34,197,94,.4)}.btn-success:hover{transform:translateY(-1px)}
+.btn-danger{background:rgba(239,68,68,.15);color:var(--danger);border:1px solid rgba(239,68,68,.3)}.btn-danger:hover{background:var(--danger);color:#fff}
+.btn-sm{padding:6px 12px;font-size:10px}
+.view{display:none;animation:viewIn .35s ease-out}.view.active{display:block}
+@keyframes viewIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.content{padding:24px;max-width:1400px;margin:0 auto}
+.landing-hero{position:relative;border-radius:22px;padding:42px;margin-bottom:24px;background:linear-gradient(135deg,rgba(99,102,241,.18),rgba(168,85,247,.14),rgba(236,72,153,.12));border:1px solid var(--border-strong);overflow:hidden}
+.landing-hero h1{font-size:clamp(26px,3.5vw,40px);font-weight:900;line-height:1.3;margin-bottom:14px;letter-spacing:-1.4px}
+.landing-hero h1 .accent{background:linear-gradient(135deg,#fff,var(--accent),var(--grad-2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.landing-hero p{font-size:14px;color:var(--text-2);max-width:600px;margin-bottom:22px;line-height:1.85}.landing-actions{display:flex;gap:10px;flex-wrap:wrap}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:24px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px}
+.stat-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:10px}
+.stat-icon.blue{background:rgba(99,102,241,.15);color:var(--grad-1)}.stat-icon.purple{background:rgba(168,85,247,.15);color:var(--grad-2)}.stat-icon.pink{background:rgba(236,72,153,.15);color:var(--grad-3)}.stat-icon.cyan{background:rgba(34,211,238,.15);color:var(--accent)}
+.stat-value{font-size:24px;font-weight:900;margin-bottom:2px}.stat-label{font-size:10px;color:var(--muted);font-weight:700}
+.sites-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.sites-header h2{font-size:18px;font-weight:900;letter-spacing:-.5px;display:flex;align-items:center;gap:8px}.sites-header h2 i{color:var(--grad-1)}
+.sites-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.site-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;transition:var(--transition);cursor:pointer;position:relative;overflow:hidden}
+.site-card:hover{border-color:var(--border-strong);transform:translateY(-4px)}.site-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--brand-grad)}
+.site-card-thumb{width:100%;height:120px;background:linear-gradient(135deg,rgba(99,102,241,.2),rgba(168,85,247,.15));border-radius:10px;margin-bottom:12px;display:flex;align-items:center;justify-content:center}
+.site-card-thumb i{font-size:36px;color:var(--text-2);opacity:.6}.site-card-thumb.html-thumb{background:linear-gradient(135deg,rgba(34,211,238,.15),rgba(34,197,94,.1))}.site-card-thumb.html-thumb i{color:var(--accent);opacity:.9}
+.site-card-title{font-size:14px;font-weight:800;margin-bottom:4px}.site-card-slug{font-size:9px;color:var(--accent);margin-bottom:10px;font-family:monospace;font-weight:700;word-break:break-all}
+.site-card-meta{font-size:10px;color:var(--muted);margin-bottom:12px;display:flex;gap:10px;flex-wrap:wrap}
+.site-card-actions{display:flex;gap:6px;flex-wrap:wrap}.site-card-actions .btn{padding:5px 10px;font-size:9px}
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted)}.empty-icon{font-size:56px;margin-bottom:14px;opacity:.25}.empty-state h3{font-size:15px;font-weight:800;color:var(--text);margin-bottom:6px}.empty-state p{font-size:12px}
+.editor-layout{display:flex;height:calc(100vh - 60px);overflow:hidden}
+.editor-panel{width:380px;background:rgba(8,8,14,.82);backdrop-filter:var(--glass);border-left:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;scrollbar-width:thin}
+.editor-tabs{display:flex;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(8,8,14,.95);z-index:5;flex-wrap:wrap}
+.editor-tab{flex:1;min-width:70px;padding:12px 6px;text-align:center;font-size:9px;font-weight:700;color:var(--muted);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;display:flex;flex-direction:column;align-items:center;gap:3px;font-family:inherit}
+.editor-tab i{font-size:14px}.editor-tab.active{color:var(--grad-1);border-bottom-color:var(--grad-1)}
+.editor-body{padding:16px;flex:1}.editor-section{margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border)}.editor-section:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.editor-section-title{font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+.editor-field{margin-bottom:12px}.editor-field label{display:block;font-size:10px;color:var(--text-2);font-weight:600;margin-bottom:5px}
+.editor-field input,.editor-field textarea,.editor-field select{width:100%;padding:9px 12px;background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:9px;color:var(--text);outline:none;font-size:11px;font-family:inherit;transition:var(--transition)}
+.editor-field input:focus,.editor-field textarea:focus,.editor-field select:focus{border-color:var(--grad-1);box-shadow:0 0 0 3px rgba(99,102,241,.1)}.editor-field textarea{resize:vertical;min-height:70px}
+.color-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}.color-opt{width:100%;aspect-ratio:1;border-radius:8px;cursor:pointer;border:2px solid transparent;transition:var(--transition)}.color-opt.active{border-color:#fff;transform:scale(1.08)}
+.blocks-list{display:flex;flex-direction:column;gap:6px}
+.block-item{padding:10px;background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:9px;font-size:11px;display:flex;align-items:center;justify-content:space-between;transition:var(--transition)}
+.block-item:hover{background:var(--surface);border-color:var(--grad-1)}.block-item i.drag{color:var(--muted)}.block-item-actions{display:flex;gap:3px}
+.block-item-actions button{background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--text-2);padding:4px 6px;border-radius:5px;cursor:pointer;font-size:9px}
+.block-item-actions button:hover{color:var(--text);border-color:var(--grad-1)}.block-item-actions button.danger:hover{background:var(--danger);color:#fff}.block-item-actions button:disabled{opacity:.3;cursor:not-allowed}
+.add-block-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:10px}
+.add-block-btn{padding:12px 6px;background:rgba(0,0,0,.4);border:1px dashed var(--border-strong);border-radius:9px;color:var(--text-2);cursor:pointer;font-size:10px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:5px;font-family:inherit;transition:var(--transition)}
+.add-block-btn:hover{border-color:var(--grad-1);background:rgba(99,102,241,.08);color:var(--text)}.add-block-btn i{font-size:15px;color:var(--grad-1)}
+.server-settings-panel{width:320px;background:rgba(8,8,14,.82);backdrop-filter:var(--glass);border-left:1px solid var(--border);overflow-y:auto;scrollbar-width:thin;display:none;flex-direction:column;padding:16px}.server-settings-panel.show{display:flex}
+.server-settings-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.server-settings-header h3{font-size:13px;font-weight:800;display:flex;align-items:center;gap:8px}.server-settings-header h3 i{color:var(--success)}.server-settings-close{background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px}
+.setting-item{padding:12px;background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:10px;margin-bottom:10px}
+.setting-item-header{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:6px}.setting-item-title{font-size:11px;font-weight:700;display:flex;align-items:center;gap:6px}.setting-item-desc{font-size:9px;color:var(--muted);line-height:1.6}
+.toggle{position:relative;width:38px;height:20px;flex-shrink:0}.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;cursor:pointer;inset:0;background:rgba(0,0,0,.6);border:1px solid var(--border);border-radius:20px;transition:var(--transition)}
+.toggle-slider:before{content:'';position:absolute;height:14px;width:14px;left:2px;top:2px;background:var(--muted);border-radius:50%;transition:var(--transition)}
+.toggle input:checked+.toggle-slider{background:linear-gradient(135deg,#22c55e,#16a34a);border-color:transparent}.toggle input:checked+.toggle-slider:before{transform:translateX(18px);background:#fff}
+.editor-preview-wrap{flex:1;display:flex;flex-direction:column;background:#1a1a2a;overflow:hidden;min-width:0}
+.publish-bar{padding:10px 14px;background:var(--surface-2);border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.publish-bar-info{font-size:10px;color:var(--muted);display:flex;align-items:center;gap:6px}.status-dot{width:7px;height:7px;border-radius:50%;background:var(--warning)}
+.publish-bar-info.published .status-dot{background:var(--success);box-shadow:0 0 8px var(--success)}.publish-bar-actions{display:flex;gap:6px;flex-wrap:wrap}
+.preview-frame{flex:1;overflow:hidden;background:#fff;display:flex;flex-direction:column}
+.preview-frame iframe{width:100%;flex:1;border:none;background:#fff}
+.console-panel{height:0;overflow:hidden;background:#0a0a10;border-top:1px solid var(--border);transition:height .3s;display:flex;flex-direction:column;flex-shrink:0}
+.console-panel.show{height:180px}
+.console-header{padding:8px 12px;background:#111119;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.console-header h4{font-size:10px;font-weight:800;color:var(--text-2);display:flex;align-items:center;gap:6px}
+.console-header h4 i{color:var(--accent)}
+.console-actions{display:flex;gap:4px}
+.console-actions button{background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--text-2);padding:3px 8px;border-radius:5px;font-size:9px;cursor:pointer;font-family:inherit}
+.console-actions button:hover{color:var(--text);border-color:var(--grad-1)}
+.console-body{flex:1;overflow-y:auto;padding:8px 12px;font-family:monospace;font-size:10px;direction:ltr;text-align:left}
+.console-line{padding:3px 0;border-bottom:1px solid rgba(255,255,255,.03);color:var(--text-2);white-space:pre-wrap;word-break:break-all}
+.console-line.error{color:var(--danger)}.console-line.warn{color:var(--warning)}.console-line.info{color:var(--accent)}.console-line.success{color:var(--success)}
+.console-line .ts{color:var(--muted);margin-right:6px}
+.upload-zone{border:2px dashed var(--border-strong);border-radius:16px;padding:24px 16px;text-align:center;background:rgba(0,0,0,.3);transition:var(--transition);cursor:pointer;margin-bottom:16px}
+.upload-zone:hover{border-color:var(--grad-1);background:rgba(99,102,241,.05)}
+.upload-zone-icon{width:52px;height:52px;border-radius:15px;background:var(--brand-grad);display:inline-flex;align-items:center;justify-content:center;font-size:22px;color:#fff;margin-bottom:10px;box-shadow:0 6px 20px rgba(99,102,241,.4)}
+.upload-zone h3{font-size:13px;font-weight:800;margin-bottom:4px}.upload-zone p{font-size:10px;color:var(--muted)}
+.upload-zone .file-info{margin-top:10px;padding:8px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:8px;font-size:10px;color:var(--success)}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(14px)}.modal-overlay.show{display:flex;animation:modalFade .25s ease-out}
+@keyframes modalFade{from{opacity:0}to{opacity:1}}
+.modal-box{background:var(--surface-2);padding:26px;border-radius:20px;width:100%;max-width:480px;border:1px solid var(--border-strong);position:relative;box-shadow:0 30px 90px rgba(0,0,0,.75);max-height:90vh;overflow-y:auto}
+.modal-box h2{font-size:17px;font-weight:900;margin-bottom:4px}.modal-box p.subtitle{font-size:11px;color:var(--muted);margin-bottom:18px}
+.modal-box input{width:100%;padding:11px 14px;margin-bottom:10px;border-radius:10px;border:1px solid var(--border);background:rgba(0,0,0,.5);color:#fff;outline:none;font-size:12px;font-family:inherit}
+.modal-box input:focus{border-color:var(--grad-1)}
+.primary-btn{width:100%;padding:12px;background:var(--brand-grad);color:#fff;border:none;border-radius:10px;font-weight:800;cursor:pointer;margin-bottom:8px;font-size:12px;font-family:inherit;transition:var(--transition)}
+.primary-btn:hover{transform:translateY(-1px)}.primary-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.modal-switch{color:var(--muted);font-size:11px;cursor:pointer;text-align:center}.modal-switch b{color:var(--grad-1)}
+.close-modal{position:absolute;top:12px;left:12px;background:rgba(255,255,255,.05);border:1px solid var(--border);color:#fff;font-size:14px;cursor:pointer;width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center}
+.toast{position:fixed;bottom:24px;left:50%;transform:translate(-50%,24px);background:var(--surface-2);color:var(--text);padding:11px 20px;border-radius:11px;font-weight:700;font-size:11px;opacity:0;pointer-events:none;transition:all .35s;z-index:2000;box-shadow:0 20px 60px rgba(0,0,0,.65);border:1px solid var(--border-strong);max-width:90%;text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}.toast.error{background:rgba(239,68,68,.96);color:#fff}.toast.success{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff}.toast.info{background:rgba(34,211,238,.95);color:#fff}
+.url-box{padding:10px;background:rgba(0,0,0,.5);border:1px solid var(--accent);border-radius:9px;font-family:monospace;font-size:10px;color:var(--accent);word-break:break-all;margin-bottom:10px;cursor:pointer}
+.mode-badge{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:20px;font-size:9px;font-weight:800;margin-bottom:10px}
+.mode-badge.builder{background:rgba(99,102,241,.15);color:var(--grad-1);border:1px solid rgba(99,102,241,.3)}.mode-badge.html{background:rgba(34,211,238,.15);color:var(--accent);border:1px solid rgba(34,211,238,.3)}
+.security-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:12px;font-size:8px;font-weight:800;margin-left:4px;margin-bottom:4px}
+.security-badge.on{background:rgba(34,197,94,.15);color:var(--success);border:1px solid rgba(34,197,94,.3)}
+.security-badge.off{background:rgba(107,107,133,.15);color:var(--muted);border:1px solid rgba(107,107,133,.3)}
+.mobile-menu-btn{display:none;background:transparent;border:1px solid var(--border);color:var(--text);width:36px;height:36px;border-radius:9px;cursor:pointer}
+@media(max-width:900px){.sidebar{transform:translateX(100%);transition:transform .35s}.sidebar.open{transform:translateX(0)}.main{margin-right:0}.mobile-menu-btn{display:flex;align-items:center;justify-content:center}.content{padding:14px}.topbar{padding:10px 14px}.landing-hero{padding:24px 20px}.editor-layout{flex-direction:column;height:auto}.editor-panel{width:100%;max-height:50vh}.server-settings-panel{width:100%;max-height:40vh}.editor-preview-wrap{height:70vh}.console-panel.show{height:140px}}
 </style>
 </head>
 <body>
+<div class="boot" id="boot"><div class="boot-logo"><i class="fas fa-magic"></i></div><div class="boot-title">Vigram Studio</div><div class="boot-status"><span class="boot-dot"></span><span id="bootText">در حال راه‌اندازی...</span></div></div>
+<div class="app-shell">
+<aside class="sidebar" id="sidebar">
+  <div class="brand" onclick="switchView('dashboard')"><div class="brand-mark"><i class="fas fa-magic"></i></div><div><div class="brand-name">Vigram Studio</div><div class="brand-sub">سایت ساز حرفه‌ای</div></div></div>
+  <div class="nav-group"><div class="nav-group-title">فضای کاری</div>
+    <button class="nav-link active" id="nav-dashboard" onclick="switchView('dashboard')"><i class="fas fa-home"></i> داشبورد</button>
+    <button class="nav-link" id="nav-sites" onclick="switchView('sites')"><i class="fas fa-globe"></i> سایت‌های من</button>
+    <button class="nav-link" id="nav-explore" onclick="switchView('explore')"><i class="fas fa-compass"></i> کاوش</button></div>
+  <div class="nav-group"><div class="nav-group-title">ابزارها</div><button class="nav-link" id="nav-trash" onclick="switchView('trash')"><i class="fas fa-trash"></i> سطل بازیافت</button></div>
+  <div class="user-card" id="userCard" style="display:none"><div class="user-avatar" id="userAvatar">U</div><div class="user-info"><div class="user-name" id="userName">کاربر</div><div class="user-email" id="userEmail">-</div></div><button class="logout-btn" onclick="handleLogout()" title="خروج"><i class="fas fa-sign-out-alt"></i></button></div>
+</aside>
+<main class="main">
+  <div class="topbar"><div class="topbar-left"><button class="mobile-menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')"><i class="fas fa-bars"></i></button><div class="page-title" id="pageTitle">داشبورد</div></div><div class="topbar-right" id="topbarRight"></div></div>
 
-<div class="app-wrapper">
-  <div class="topbar">
-    <div class="logo" id="logoBtn"><i class="fab fa-youtube"></i> Vigram</div>
-    <div class="search-bar"><input type="text" id="searchInput" placeholder="جستجو..." oninput="handleSearch(this.value)"><button><i class="fas fa-search"></i></button></div>
-    <div class="top-actions" id="topActions"></div>
-  </div>
+  <div class="view active" id="viewDashboard"><div class="content">
+    <div class="landing-hero"><h1>سایت خودت رو <span class="accent">بساز</span> یا فایلش رو آپلود کن</h1>
+      <p>با ویرایشگر بلوک‌محور از صفر بساز، یا فایل HTML آماده‌ات رو آپلود کن. با یک کلیک روی «انتشار» لینک زنده بگیر، و با «حذف دائمی» صفحه ۴۰۴ نمایش داده می‌شه. هر سایت مسیر مستقل خودش را دارد.</p>
+      <div class="landing-actions"><button class="btn btn-primary" onclick="openNewSiteModal()"><i class="fas fa-plus"></i> ساخت با ویرایشگر</button><button class="btn btn-ghost" onclick="openNewUploadModal()"><i class="fas fa-upload"></i> آپلود HTML</button></div></div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-globe"></i></div><div class="stat-value" id="statSites">0</div><div class="stat-label">سایت‌های من</div></div>
+      <div class="stat-card"><div class="stat-icon purple"><i class="fas fa-eye"></i></div><div class="stat-value" id="statViews">0</div><div class="stat-label">بازدیدها</div></div>
+      <div class="stat-card"><div class="stat-icon pink"><i class="fas fa-code"></i></div><div class="stat-value" id="statEdits">0</div><div class="stat-label">HTML مستقیم</div></div>
+      <div class="stat-card"><div class="stat-icon cyan"><i class="fas fa-users"></i></div><div class="stat-value" id="statShares">0</div><div class="stat-label">عمومی</div></div></div>
+    <div class="sites-header"><h2><i class="fas fa-fire"></i> آخرین سایت‌های شما</h2><button class="btn btn-ghost btn-sm" onclick="switchView('sites')">همه <i class="fas fa-arrow-left"></i></button></div>
+    <div class="sites-grid" id="recentSitesGrid"></div></div></div>
 
-  <!-- Auth Modal -->
-  <div class="modal-overlay" id="authModal">
-    <div class="modal-box">
-      <button class="close-modal" onclick="closeAuth()">&times;</button>
-      <h2><i class="fab fa-youtube"></i> Vigram</h2>
-      <p style="margin-bottom:25px; color:var(--muted); font-size: 14px;">برای این کار باید وارد شوید.</p>
-      <input type="text" id="authUsername" placeholder="نام کاربری" style="display:none;">
-      <input type="email" id="authEmail" placeholder="ایمیل">
-      <input type="password" id="authPassword" placeholder="رمز عبور">
-      <button id="submitAuthBtn" onclick="handleAuth()">ورود</button>
-      <div class="modal-switch" id="switchAuth" onclick="toggleAuthMode()">حساب ندارید؟ ثبت‌نام کنید</div>
-    </div>
-  </div>
+  <div class="view" id="viewSites"><div class="content"><div class="sites-header"><h2><i class="fas fa-globe"></i> سایت‌های من</h2><div style="display:flex;gap:6px"><button class="btn btn-ghost btn-sm" onclick="openNewUploadModal()"><i class="fas fa-upload"></i> آپلود</button><button class="btn btn-primary btn-sm" onclick="openNewSiteModal()"><i class="fas fa-plus"></i> ساخت</button></div></div><div class="sites-grid" id="sitesGrid"></div></div></div>
+  <div class="view" id="viewExplore"><div class="content"><div class="sites-header"><h2><i class="fas fa-compass"></i> کاوش سایت‌ها</h2></div><div class="sites-grid" id="exploreGrid"></div></div></div>
+  <div class="view" id="viewTrash"><div class="content"><div class="sites-header"><h2><i class="fas fa-trash"></i> سطل بازیافت</h2></div><div class="sites-grid" id="trashGrid"></div></div></div>
 
-  <!-- Edit Profile Modal -->
-  <div class="modal-overlay" id="editProfileModal">
-    <div class="modal-box">
-      <button class="close-modal" onclick="closeEditProfile()">&times;</button>
-      <h2>ویرایش پروفایل</h2>
-      <div style="margin-bottom: 20px;">
-        <label style="display:block; font-size:12px; color:var(--muted); margin-bottom:8px; text-align:right;">نام کاربری جدید</label>
-        <input type="text" id="editNameInput" placeholder="نام جدید">
-      </div>
-      <div style="margin-bottom: 20px;">
-        <label style="display:block; font-size:12px; color:var(--muted); margin-bottom:8px; text-align:right;">آواتار جدید</label>
-        <div class="uc-wrapper" id="avatarUploaderWrapper" style="min-height:120px; border-radius:12px;">
-          <uc-config ctx-name="avatar-uploader" pubkey="634057eb7c1c635917d2" source-list="local" accept="image/*" multiple="false"></uc-config>
-          <uc-file-uploader-regular ctx-name="avatar-uploader"></uc-file-uploader-regular>
-          <uc-upload-ctx-provider ctx-name="avatar-uploader"></uc-upload-ctx-provider>
+  <div class="view" id="viewEditor"><div class="editor-layout">
+    <div class="editor-panel">
+      <div class="editor-tabs">
+        <button class="editor-tab active" data-tab="content" onclick="switchEditorTab('content')"><i class="fas fa-layer-group"></i> محتوا</button>
+        <button class="editor-tab" data-tab="theme" onclick="switchEditorTab('theme')"><i class="fas fa-palette"></i> ظاهر</button>
+        <button class="editor-tab" data-tab="html" onclick="switchEditorTab('html')"><i class="fas fa-code"></i> HTML</button>
+        <button class="editor-tab" data-tab="settings" onclick="switchEditorTab('settings')"><i class="fas fa-cog"></i> تنظیمات</button>
+        <button class="editor-tab" data-tab="security" onclick="switchEditorTab('security')"><i class="fas fa-shield-alt"></i> امنیت</button>
+        <button class="editor-tab" data-tab="console" onclick="switchEditorTab('console')"><i class="fas fa-terminal"></i> کنسول</button></div>
+      <div class="editor-body">
+        <div id="tabContent"><div class="mode-badge builder" id="modeBadge"></div>
+          <div class="editor-section"><div class="editor-section-title">بلوک‌ها</div><div class="blocks-list" id="blocksList"></div></div>
+          <div class="editor-section"><div class="editor-section-title">افزودن بلوک</div><div class="add-block-grid">
+            <button class="add-block-btn" onclick="addBlock('hero')"><i class="fas fa-star"></i> هدر</button><button class="add-block-btn" onclick="addBlock('text')"><i class="fas fa-paragraph"></i> متن</button>
+            <button class="add-block-btn" onclick="addBlock('image')"><i class="fas fa-image"></i> تصویر</button><button class="add-block-btn" onclick="addBlock('gallery')"><i class="fas fa-images"></i> گالری</button>
+            <button class="add-block-btn" onclick="addBlock('list')"><i class="fas fa-list"></i> لیست</button><button class="add-block-btn" onclick="addBlock('quote')"><i class="fas fa-quote-right"></i> نقل قول</button>
+            <button class="add-block-btn" onclick="addBlock('button')"><i class="fas fa-hand-pointer"></i> دکمه</button><button class="add-block-btn" onclick="addBlock('divider')"><i class="fas fa-minus"></i> جداکننده</button></div></div></div>
+        <div id="tabTheme" style="display:none">
+          <div class="editor-section"><div class="editor-section-title">رنگ پس‌زمینه</div><div class="color-grid" id="bgColorGrid"></div></div>
+          <div class="editor-section"><div class="editor-section-title">رنگ متن</div><div class="color-grid" id="textColorGrid"></div></div>
+          <div class="editor-section"><div class="editor-section-title">فونت</div><div class="editor-field"><select id="fontSelect" onchange="updateTheme()"><option value="Vazirmatn">Vazirmatn</option><option value="serif">Serif</option><option value="monospace">Monospace</option><option value="cursive">Cursive</option></select></div></div>
+          <div class="editor-section"><div class="editor-section-title">گردی گوشه‌ها</div><div class="editor-field"><select id="radiusSelect" onchange="updateTheme()"><option value="0">بدون گردی</option><option value="8px">کم</option><option value="16px">متوسط</option><option value="24px">زیاد</option></select></div></div></div>
+        <div id="tabHtml" style="display:none"><div class="mode-badge html"><i class="fas fa-code"></i> HTML مستقیم</div>
+          <div class="editor-section"><div class="editor-section-title">آپلود فایل HTML</div>
+            <div class="upload-zone" onclick="document.getElementById('editorHtmlFileInput').click()"><div class="upload-zone-icon"><i class="fas fa-file-code"></i></div><h3>انتخاب فایل HTML</h3><p>فایل .html از گوشی</p><div class="file-info" id="editorFileInfo" style="display:none"></div></div>
+            <input type="file" id="editorHtmlFileInput" accept=".html,.htm,text/html" style="display:none" onchange="handleEditorHtmlFile(this)"></div>
+          <div class="editor-section"><div class="editor-section-title">یا کد را مستقیم بنویس</div><div class="editor-field"><textarea id="htmlCodeEditor" rows="12" dir="ltr" placeholder="<!DOCTYPE html>"></textarea></div>
+            <button class="btn btn-ghost" style="width:100%;margin-bottom:6px" onclick="applyHtmlCode()"><i class="fas fa-check"></i> اعمال کد</button>
+            <button class="btn btn-ghost" style="width:100%" onclick="resetToBuilder()"><i class="fas fa-undo"></i> بازگشت به بلوکی</button></div></div>
+        <div id="tabSettings" style="display:none">
+          <div class="editor-section"><div class="editor-section-title">اطلاعات سایت</div>
+            <div class="editor-field"><label>عنوان</label><input type="text" id="siteTitleInput" oninput="updateSiteInfo()"></div>
+            <div class="editor-field"><label>نام داخلی</label><input type="text" id="siteSlugInput" dir="ltr" oninput="updateSiteInfo()"></div>
+            <div class="editor-field"><label>توضیح</label><textarea id="siteDescInput" oninput="updateSiteInfo()" rows="2"></textarea></div></div>
+          <div class="editor-section"><div class="editor-section-title">دسترسی عمومی</div><div class="editor-field"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="sitePublicInput" onchange="updateSiteInfo()" style="width:auto"> در کاوش نمایش داده شود</label></div></div>
+          <div class="editor-section"><div class="editor-section-title">مسیر فایل</div>
+            <div style="font-size:10px;color:var(--muted);font-family:monospace;direction:ltr;text-align:left;padding:8px;background:rgba(0,0,0,.4);border-radius:8px;word-break:break-all" id="sitePathInfo">—</div></div>
+          <div class="editor-section"><div class="editor-section-title">لینک آنلاین</div>
+            <div id="liveUrlContainer" style="display:none"><div class="url-box" id="liveUrl" onclick="copyLiveUrl()"></div>
+              <button class="btn btn-ghost" style="width:100%;margin-bottom:6px" onclick="copyLiveUrl()"><i class="fas fa-link"></i> کپی لینک</button>
+              <button class="btn btn-ghost" style="width:100%;margin-bottom:6px" onclick="openLiveUrl()"><i class="fas fa-external-link-alt"></i> باز کردن سایت</button>
+              <button class="btn btn-ghost" style="width:100%" onclick="exportSite()"><i class="fas fa-download"></i> دانلود فایل HTML</button></div>
+            <div id="noLiveUrlContainer" style="font-size:10px;color:var(--muted);text-align:center;padding:6px">ابتدا منتشر کن تا لینک ساخته شود</div></div></div>
+        <div id="tabSecurity" style="display:none">
+          <div class="mode-badge builder" style="background:rgba(34,197,94,.15);color:var(--success);border-color:rgba(34,197,94,.3)"><i class="fas fa-shield-alt"></i> تنظیمات امنیتی پروژه</div>
+          <div class="editor-section"><div class="editor-section-title">پایه</div>
+            <div class="setting-item"><div class="setting-item-header"><div class="setting-item-title"><i class="fas fa-eye-slash" style="color:var(--success)"></i> پنهان‌سازی سورس</div><label class="toggle"><input type="checkbox" id="opt-encryption" onchange="updateSecurity()"><span class="toggle-slider"></span></label></div><div class="setting-item-desc">base64-obfuscated خروجی</div></div>
+            <div class="setting-item"><div class="setting-item-header"><div class="setting-item-title"><i class="fas fa-user-shield" style="color:var(--accent)"></i> محافظت از محتوا</div><label class="toggle"><input type="checkbox" id="opt-protect" onchange="updateSecurity()"><span class="toggle-slider"></span></label></div><div class="setting-item-desc">بستن کپی/راست‌کلیک</div></div>
+            <div class="setting-item"><div class="setting-item-header"><div class="setting-item-title"><i class="fas fa-search-minus" style="color:var(--warning)"></i> جلوگیری از ایندکس</div><label class="toggle"><input type="checkbox" id="opt-noindex" onchange="updateSecurity()"><span class="toggle-slider"></span></label></div><div class="setting-item-desc">meta robots</div></div>
+            <div class="setting-item"><div class="setting-item-header"><div class="setting-item-title"><i class="fas fa-robot" style="color:var(--danger)"></i> ضد ربات</div><label class="toggle"><input type="checkbox" id="opt-ddos" onchange="updateSecurity()"><span class="toggle-slider"></span></label></div><div class="setting-item-desc">navigator.webdriver detection</div></div>
+            <div class="setting-item"><div class="setting-item-header"><div class="setting-item-title"><i class="fas fa-key" style="color:var(--grad-2)"></i> قفل با رمز AES-256</div><label class="toggle"><input type="checkbox" id="opt-password" onchange="updateSecurity()"><span class="toggle-slider"></span></label></div><div class="setting-item-desc">فقط برای سایت عمومی</div></div>
+            <div class="editor-field" id="passwordField" style="display:none"><label>رمز عبور سایت</label><input type="text" id="sitePasswordInput" oninput="updateSecurity()" placeholder="my-secret-123"></div>
+            <div class="setting-item"><div class="setting-item-header"><div class="setting-item-title"><i class="fas fa-cookie-bite" style="color:var(--warning)"></i> هشدار کوکی</div><label class="toggle"><input type="checkbox" id="opt-cookie" onchange="updateSecurity()"><span class="toggle-slider"></span></label></div><div class="setting-item-desc">GDPR banner</div></div></div>
+          <div class="editor-section"><div class="editor-section-title">محیط اجرای ایزوله</div>
+            <div class="setting-item"><div class="setting-item-header"><div class="setting-item-title"><i class="fas fa-code" style="color:var(--grad-1)"></i> فعال‌سازی JavaScript</div><label class="toggle"><input type="checkbox" id="sec-allowjs" onchange="updateSecurity()"><span class="toggle-slider"></span></label></div><div class="setting-item-desc">اجازهٔ اجرای JS در سایت تولیدشده</div></div>
+            <div class="setting-item"><div class="setting-item-header"><div class="setting-item-title"><i class="fas fa-ban" style="color:var(--danger)"></i> جلوگیری از دسترسی به پنل</div><label class="toggle"><input type="checkbox" id="sec-panelblock" onchange="updateSecurity()"><span class="toggle-slider"></span></label></div><div class="setting-item-desc">CSP block + meta frame-ancestors</div></div>
+            <div class="setting-item"><div class="setting-item-header"><div class="setting-item-title"><i class="fas fa-database" style="color:var(--accent)"></i> محدودکردن localStorage</div><label class="toggle"><input type="checkbox" id="sec-storage" onchange="updateSecurity()"><span class="toggle-slider"></span></label></div><div class="setting-item-desc">storage-block shim در iframe</div></div>
+            <div class="setting-item"><div class="setting-item-header"><div class="setting-item-title"><i class="fas fa-camera" style="color:var(--warning)"></i> محدودکردن دوربین/میکروفن</div><label class="toggle"><input type="checkbox" id="sec-media" onchange="updateSecurity()"><span class="toggle-slider"></span></label></div><div class="setting-item-desc">Permissions-Policy meta</div></div>
+            <div class="setting-item"><div class="setting-item-header"><div class="setting-item-title"><i class="fas fa-map-marker-alt" style="color:var(--warning)"></i> محدودکردن موقعیت مکانی</div><label class="toggle"><input type="checkbox" id="sec-geo" onchange="updateSecurity()"><span class="toggle-slider"></span></label></div><div class="setting-item-desc">geolocation=() در CSP</div></div>
+            <div class="setting-item"><div class="setting-item-header"><div class="setting-item-title"><i class="fas fa-window-restore" style="color:var(--danger)"></i> جلوگیری از پنجره‌های ناخواسته</div><label class="toggle"><input type="checkbox" id="sec-popups" onchange="updateSecurity()"><span class="toggle-slider"></span></label></div><div class="setting-item-desc">حذف allow-popups از sandbox</div></div>
+            <div class="setting-item"><div class="setting-item-header"><div class="setting-item-title"><i class="fas fa-lock" style="color:var(--danger)"></i> جلوگیری از دسترسی به پنجره اصلی</div><label class="toggle"><input type="checkbox" id="sec-topnav" onchange="updateSecurity()"><span class="toggle-slider"></span></label></div><div class="setting-item-desc">حذف allow-top-navigation</div></div>
+            <div class="setting-item"><div class="setting-item-header"><div class="setting-item-title"><i class="fas fa-network-wired" style="color:var(--accent)"></i> محدودکردن شبکه به دامنه‌های مجاز</div><label class="toggle"><input type="checkbox" id="sec-network" onchange="updateSecurity()"><span class="toggle-slider"></span></label></div><div class="setting-item-desc">connect-src محدود</div></div>
+            <div class="setting-item"><div class="setting-item-header"><div class="setting-item-title"><i class="fas fa-code-branch" style="color:var(--accent)"></i> جلوگیری از اسکریپت غیرمجاز</div><label class="toggle"><input type="checkbox" id="sec-scripts" onchange="updateSecurity()"><span class="toggle-slider"></span></label></div><div class="setting-item-desc">script-src محدود به CDNهای مجاز</div></div>
+            <div class="setting-item"><div class="setting-item-header"><div class="setting-item-title"><i class="fas fa-clipboard-check" style="color:var(--success)"></i> بررسی امنیتی قبل از انتشار</div><label class="toggle"><input type="checkbox" id="sec-preflight" onchange="updateSecurity()"><span class="toggle-slider"></span></label></div><div class="setting-item-desc">اسکن کد قبل از آپلود</div></div>
+            <div class="editor-field" style="margin-top:10px"><label>دامنه‌های مجاز (هر خط یکی)</label><textarea id="sec-allowdomains" rows="3" dir="ltr" placeholder="cdn.jsdelivr.net&#10;cdnjs.cloudflare.com" oninput="updateSecurity()"></textarea></div></div>
+          <div class="editor-section"><div class="editor-section-title">وضعیت</div><div id="securityStatus" style="font-size:10px;color:var(--muted);line-height:2"></div></div></div>
+        <div id="tabConsole" style="display:none">
+          <div class="mode-badge builder" style="background:rgba(34,211,238,.15);color:var(--accent);border-color:rgba(34,211,238,.3)"><i class="fas fa-terminal"></i> محیط تست و کنسول</div>
+          <div class="editor-section"><div class="editor-section-title">اجرای پروژه</div>
+            <button class="btn btn-primary" style="width:100%;margin-bottom:6px" onclick="reloadPreviewFrame()"><i class="fas fa-play"></i> اجرای مجدد</button>
+            <button class="btn btn-ghost" style="width:100%;margin-bottom:6px" onclick="stopPreviewFrame()"><i class="fas fa-stop"></i> توقف اجرا</button>
+            <button class="btn btn-ghost" style="width:100%;margin-bottom:6px" onclick="clearConsole()"><i class="fas fa-trash"></i> پاک‌کردن کنسول</button>
+            <button class="btn btn-ghost" style="width:100%" onclick="runSecurityScan()"><i class="fas fa-shield-alt"></i> اسکن امنیتی کد</button></div>
+          <div class="editor-section"><div class="editor-section-title">راهنمای کنسول</div>
+            <div style="font-size:10px;color:var(--muted);line-height:1.8">
+              خطاهای JS، شبکه و CORS به‌صورت زنده از iframe دریافت می‌شوند.<br>
+              از طریق پیام‌رسانی postMessage و بدون دسترسی مستقیم به DOM پنل.
+            </div></div></div>
+      </div></div>
+
+    <div class="server-settings-panel" id="serverSettingsPanel">
+      <div class="server-settings-header"><h3><i class="fas fa-shield-alt"></i> تنظیمات امنیتی</h3><button class="server-settings-close" onclick="toggleServerSettings()"><i class="fas fa-times"></i></button></div>
+      <div id="serverSettingsContent"></div>
+      <button class="btn btn-success" style="width:100%;margin-top:10px" onclick="publishNow()"><i class="fas fa-rocket"></i> انتشار با تنظیمات</button></div>
+
+    <div class="editor-preview-wrap"><div class="publish-bar">
+      <div class="publish-bar-info" id="publishStatus"><span class="status-dot"></span><span id="publishStatusText">پیش‌نویس</span></div>
+      <div class="publish-bar-actions">
+        <button class="btn btn-ghost btn-sm" onclick="reloadPreviewFrame()" title="اجرای مجدد"><i class="fas fa-play"></i></button>
+        <button class="btn btn-ghost btn-sm" onclick="toggleConsolePanel()" title="کنسول"><i class="fas fa-terminal"></i></button>
+        <button class="btn btn-ghost btn-sm" onclick="toggleServerSettings()" title="تنظیمات"><i class="fas fa-shield-alt"></i></button>
+        <button class="btn btn-ghost btn-sm" onclick="exportSite()" title="دانلود HTML"><i class="fas fa-download"></i></button>
+        <button class="btn btn-ghost btn-sm" onclick="saveNow()"><i class="fas fa-save"></i> ذخیره</button>
+        <button class="btn btn-success btn-sm" onclick="publishNow()" id="publishBtn"><i class="fas fa-rocket"></i> انتشار</button></div></div>
+      <div class="preview-frame">
+        <iframe id="previewFrame" sandbox="allow-scripts allow-forms"></iframe>
+        <div class="console-panel" id="consolePanel">
+          <div class="console-header"><h4><i class="fas fa-terminal"></i> کنسول زنده</h4>
+            <div class="console-actions">
+              <button onclick="reloadPreviewFrame()"><i class="fas fa-play"></i> اجرا</button>
+              <button onclick="stopPreviewFrame()"><i class="fas fa-stop"></i> توقف</button>
+              <button onclick="clearConsole()"><i class="fas fa-trash"></i> پاک</button>
+            </div></div>
+          <div class="console-body" id="consoleBody"></div>
         </div>
-      </div>
-      <button onclick="saveProfileChanges()">ذخیره تغییرات</button>
-    </div>
-  </div>
+      </div></div>
+  </div></div>
+</main></div>
 
-  <div class="view active" id="viewHome">
-    <div class="shorts-section" id="shortsSection" style="display:none; padding: 20px; border-bottom: 1px solid var(--border);">
-      <div style="font-size: 18px; font-weight: 800; display: flex; align-items: center; gap: 10px; margin-bottom: 15px;"><i class="fas fa-bolt" style="color:var(--red);"></i> شورت‌ها</div>
-      <div class="shorts-scroll" id="shortsScroll" style="display:flex; gap:15px; overflow-x:auto; scrollbar-width:none;"></div>
-    </div>
-    <div class="video-grid" id="videoGrid"></div>
-  </div>
-
-  <div class="view" id="viewShorts"><div class="shorts-feed" id="shortsFeed"></div></div>
-
-  <div class="view" id="viewPlayer">
-    <div class="player-container">
-      <video id="playerVideo" controls playsinline preload="metadata"></video>
-      <div class="player-overlay hidden" id="playerOverlay">
-        <div class="spinner" id="playerSpinner"></div>
-        <div class="error-msg" id="playerErrorMsg"></div>
-      </div>
-    </div>
-    <div class="player-details">
-      <div class="player-title-row">
-        <h1 class="player-title" id="playerTitle">عنوان ویدیو</h1>
-        <div class="owner-actions" id="ownerActions">
-          <button class="btn-delete-video" onclick="deleteBrokenVideo()"><i class="fas fa-trash"></i> حذف</button>
-        </div>
-      </div>
-      <div class="player-actions">
-        <button class="player-action-btn" id="playerLikeBtn" onclick="togglePlayerLike()"><i class="fas fa-thumbs-up"></i> <span id="playerLikes">0</span></button>
-        <button class="player-action-btn" onclick="shareVideo()"><i class="fas fa-share"></i> اشتراک</button>
-      </div>
-      <div class="player-channel">
-        <div class="channel-avatar" id="playerChannelAvatar">U</div>
-        <div class="player-channel-info" onclick="openChannelProfile()" style="cursor:pointer;">
-          <h4 id="playerChannelName">نام کانال</h4>
-        </div>
-      </div>
-      <div class="comments-section">
-        <h3 style="font-size:18px; margin-bottom:20px;">نظرات (<span id="playerCommentCount">0</span>)</h3>
-        <div id="playerCommentsList"></div>
-        <div class="comment-input-wrapper"><input type="text" id="playerCommentInput" placeholder="فقط کامنت انگلیسی..."><button onclick="addPlayerComment()">ارسال</button></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="view" id="viewUpload">
-    <div class="upload-container">
-      <div class="upload-box">
-        <h2 style="margin-bottom: 25px; text-align:center;"><i class="fas fa-cloud-upload-alt" style="color:var(--red);"></i> آپلود ویدیو جدید</h2>
-        
-        <div class="form-group">
-          <label>عنوان ویدیو</label>
-          <input type="text" id="uploadTitle" placeholder="یک عنوان جذاب بنویسید...">
-        </div>
-
-        <div class="form-group">
-          <label>نوع ویدیو</label>
-          <div class="type-selector">
-            <div class="type-btn active" id="typeVideoBtn" onclick="setUploadType('video')"><i class="fas fa-film"></i> ویدیوی معمولی</div>
-            <div class="type-btn" id="typeShortBtn" onclick="setUploadType('short')"><i class="fas fa-bolt"></i> شورت</div>
-          </div>
-        </div>
-
-        <label class="checkbox-group" style="margin-bottom: 25px;">
-          <input type="checkbox" id="agreeRules">
-          <span>قوانین و محدودیت‌ها (۳ پست در روز) را می‌پذیرم.</span>
-        </label>
-
-        <div class="form-group">
-          <div class="upload-section-title"><span>۱. فایل ویدیو</span> <span class="badge">الزامی</span></div>
-          <div class="uc-wrapper disabled" id="videoWrapper">
-            <uc-config ctx-name="video-uploader" pubkey="634057eb7c1c635917d2" source-list="local" accept="video/*" multiple="false" max-local-file-size-bytes="52428800"></uc-config>
-            <uc-file-uploader-regular ctx-name="video-uploader"></uc-file-uploader-regular>
-            <uc-upload-ctx-provider ctx-name="video-uploader"></uc-upload-ctx-provider>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <div class="upload-section-title"><span>۲. تصویر پیش‌نمایش (Thumbnail)</span> <span class="badge" style="background: var(--muted);">اختیاری</span></div>
-          <div class="uc-wrapper disabled" id="thumbWrapper">
-            <uc-config ctx-name="thumb-uploader" pubkey="634057eb7c1c635917d2" source-list="local" accept="image/*" multiple="false"></uc-config>
-            <uc-file-uploader-regular ctx-name="thumb-uploader"></uc-file-uploader-regular>
-            <uc-upload-ctx-provider ctx-name="thumb-uploader"></uc-upload-ctx-provider>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </div>
-
-  <!-- LIVE STREAM VIEW -->
-  <div class="view" id="viewLive">
-    <div class="live-container">
-      <h2 style="margin-bottom: 25px; color: var(--red);"><i class="fas fa-broadcast-tower"></i> پخش زنده</h2>
-      <div class="live-video-wrapper">
-        <video id="liveVideo" autoplay playsinline muted></video>
-        <div class="live-badge" id="liveBadge" style="display:none;"><i class="fas fa-circle"></i> زنده</div>
-      </div>
-      <div class="live-controls">
-        <button class="live-control-btn btn-start-live" id="startLiveBtn" onclick="startLiveStream()"><i class="fas fa-video"></i> شروع پخش زنده</button>
-        <button class="live-control-btn btn-stop-live" id="stopLiveBtn" onclick="stopLiveStream()" style="display:none;"><i class="fas fa-stop"></i> پایان پخش</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="view" id="viewProfile">
-    <div class="profile-header">
-      <div class="profile-avatar" id="profileAvatar">U</div>
-      <div class="profile-name" id="profileName">User</div>
-      <div class="profile-stats">
-        <span><b id="profileVideoCount">0</b> ویدیو</span>
-      </div>
-      <button class="edit-profile-btn" onclick="openEditProfile()"><i class="fas fa-edit"></i> ویرایش پروفایل</button>
-    </div>
-    <div class="video-grid" id="profileVideoGrid"></div>
-  </div>
-
-  <div class="bottom-nav">
-    <button class="nav-item active" id="navHome"><i class="fas fa-home"></i><span>خانه</span></button>
-    <button class="nav-item" id="navShorts"><i class="fas fa-bolt"></i><span>شورت‌ها</span></button>
-    <button class="nav-item" id="navLive"><i class="fas fa-broadcast-tower"></i><span>پخش زنده</span></button>
-    <button class="nav-item" id="navUpload"><i class="fas fa-plus-circle"></i><span>آپلود</span></button>
-    <button class="nav-item" id="navProfile"><i class="fas fa-user-circle"></i><span>پروفایل</span></button>
-  </div>
-</div>
-
+<div class="modal-overlay" id="newSiteModal"><div class="modal-box"><button class="close-modal" onclick="closeModal('newSiteModal')">&times;</button><h2>ساخت سایت جدید</h2><p class="subtitle">با ویرایشگر بلوکی از صفر بساز</p><input type="text" id="newSiteTitle" placeholder="عنوان سایت"><input type="text" id="newSiteSlug" placeholder="نام داخلی (اختیاری)"><button class="primary-btn" onclick="createNewSite()"><i class="fas fa-rocket"></i> شروع</button></div></div>
+<div class="modal-overlay" id="newUploadModal"><div class="modal-box"><button class="close-modal" onclick="closeModal('newUploadModal')">&times;</button><h2>آپلود فایل HTML</h2><p class="subtitle">فایل HTML آماده‌ات را انتخاب کن</p><input type="text" id="uploadSiteTitle" placeholder="عنوان سایت (اختیاری)">
+  <div class="upload-zone" onclick="document.getElementById('modalHtmlFileInput').click()"><div class="upload-zone-icon"><i class="fas fa-file-code"></i></div><h3>انتخاب فایل HTML</h3><p>حداکثر ۵ مگابایت</p><div class="file-info" id="modalFileInfo" style="display:none"></div></div>
+  <input type="file" id="modalHtmlFileInput" accept=".html,.htm,text/html" style="display:none" onchange="handleModalHtmlFile(this)"><button class="primary-btn" onclick="uploadHtmlAndPublish()" id="uploadPublishBtn"><i class="fas fa-rocket"></i> آپلود و انتشار</button></div></div>
+<div class="modal-overlay" id="authModal"><div class="modal-box"><button class="close-modal" onclick="closeModal('authModal')">&times;</button><h2 id="authTitle">خوش آمدید</h2><p class="subtitle">به Vigram Studio وارد شوید</p>
+  <input type="text" id="authUsername" placeholder="نام کاربری" style="display:none"><input type="email" id="authEmail" placeholder="ایمیل" autocomplete="email"><input type="password" id="authPassword" placeholder="رمز عبور" autocomplete="current-password">
+  <button class="primary-btn" id="submitAuthBtn" onclick="handleAuth()">ورود</button><div class="modal-switch" id="switchAuth" onclick="toggleAuthMode()">حساب ندارید؟ <b>ثبت‌نام کنید</b></div></div></div>
+<div class="modal-overlay" id="shareModal"><div class="modal-box"><button class="close-modal" onclick="closeModal('shareModal')">&times;</button><h2><i class="fas fa-check-circle" style="color:var(--success)"></i> سایت آنلاین شد!</h2><p class="subtitle">لینک را با دوستانت به اشتراک بگذار</p>
+  <div class="url-box" id="shareUrlBox" onclick="copyText(this.textContent)"></div><button class="primary-btn" onclick="copyText($('shareUrlBox').textContent)"><i class="fas fa-link"></i> کپی لینک</button>
+  <button class="btn btn-ghost" style="width:100%" onclick="window.open($('shareUrlBox').textContent,'_blank','noopener')"><i class="fas fa-external-link-alt"></i> باز کردن</button></div></div>
+<div class="modal-overlay" id="deleteConfirmModal"><div class="modal-box"><button class="close-modal" onclick="closeModal('deleteConfirmModal')">&times;</button><h2 style="color:var(--danger)"><i class="fas fa-exclamation-triangle"></i> حذف دائمی سایت</h2><p class="subtitle">این عمل غیرقابل بازگشت است. لینک سایت ۴۰۴ نمایش می‌دهد.</p>
+  <div class="editor-field"><label>برای تأیید، نام سایت را دقیقاً بنویس:</label><input type="text" id="deleteConfirmInput" placeholder="نام سایت" style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid var(--border);background:rgba(0,0,0,.5);color:#fff;font-family:inherit"></div>
+  <button class="primary-btn" style="background:linear-gradient(135deg,#ef4444,#dc2626)" onclick="confirmPermanentDelete()" id="confirmDeleteBtn" disabled><i class="fas fa-trash"></i> حذف دائمی</button></div></div>
 <div class="toast" id="toast"></div>
-
 <script>
-// ==========================================
-// تنظیمات
-// ==========================================
-const BACKENDLESS_APP_ID = "C50651A5-1DFC-4BA1-AA34-B4444E9AC5A5";
-const BACKENDLESS_JS_API_KEY = "9303E7E8-BAF9-4023-A34B-E4E024192785";
+"use strict";
+const APP_ID = "C50651A5-1DFC-4BA1-AA34-B4444E9AC5A5";
+const API_KEY = "9303E7E8-BAF9-4023-A34B-E4E024192785";
+try { if (typeof Backendless !== 'undefined') Backendless.initApp(APP_ID, API_KEY); } catch (e) { console.error(e); }
 
-const FALLBACK_THUMB = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360"><rect width="640" height="360" fill="%230f0f0f"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="40" font-weight="bold" fill="%23ff0000">Vigram</text></svg>';
+let currentUser = null, userSites = [], editingSite = null, isLoginMode = true;
+let currentEditorTab = 'content', currentBlocks = [], pendingUploadFile = null, deleteTargetSite = null;
+let currentTheme = { bgColor:'#ffffff', textColor:'#111111', font:'Vazirmatn', radius:'16px' };
+let currentSecurity = defaultSecurity();
+let exploreRows = [];
+let previewWatchdog = null;
 
-try { if (typeof Backendless !== 'undefined') { Backendless.initApp(BACKENDLESS_APP_ID, BACKENDLESS_JS_API_KEY); } } catch (e) { console.error(e); }
-
-let videos = [];
-let currentUser = null;
-let currentUploadType = 'video';
-let currentPlayerVideoId = null;
-let currentChannelId = null; // برای پروفایل کانال
-let currentSearchQuery = '';
-let pendingVideoData = null;
-let pendingThumbData = null;
-let pendingAvatarData = null;
-let isLoginMode = true;
-let liveStream = null; // برای دوربین
-
-// ==========================================
-// توابع کمکی
-// ==========================================
-function toast(msg, isError = false) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.className = 'toast show' + (isError ? ' error' : '');
-  setTimeout(() => t.classList.remove('show'), 3000);
-}
-function formatNum(n) { return (n || 0).toLocaleString('fa-IR'); }
-function formatDate(ts) { if (!ts) return ''; return new Date(ts).toLocaleDateString('fa-IR'); }
-function cleanEmail(email) { return email.replace(/-/g, '').trim().toLowerCase(); }
-
-function getUserName(user) {
-  if (!user) return 'کاربر';
-  return user.name || (user.email ? user.email.split('@')[0] : 'کاربر');
+function defaultSecurity() {
+  return {
+    encryption: false, protect: false, noindex: false, ddos: false,
+    password: false, passwordValue: '', cookie: false,
+    allowJS: true, panelBlock: true, storageBlock: false,
+    mediaBlock: true, geoBlock: true, popupBlock: true,
+    topNavBlock: true, networkBlock: true, scriptBlock: true,
+    preflight: true,
+    allowDomains: ['cdn.jsdelivr.net','cdnjs.cloudflare.com']
+  };
 }
 
-function getUserAvatar(user) {
-  if (!user) return null;
-  return user.avatarUrl || null;
+const BG_COLORS = ['#ffffff','#0f0f14','#1e1b4b','#7f1d1d','#14532d','#0c4a6e','#fdf6e3','#fce7f3'];
+const TEXT_COLORS = ['#111111','#ffffff','#6366f1','#a855f7','#ec4899','#22d3ee','#22c55e','#ef4444'];
+const BLOCK_TYPES = {
+  hero:{name:'هدر',icon:'fa-star'}, text:{name:'متن',icon:'fa-paragraph'}, image:{name:'تصویر',icon:'fa-image'},
+  gallery:{name:'گالری',icon:'fa-images'}, list:{name:'لیست',icon:'fa-list'}, quote:{name:'نقل قول',icon:'fa-quote-right'},
+  button:{name:'دکمه',icon:'fa-hand-pointer'}, divider:{name:'جداکننده',icon:'fa-minus'}
+};
+const STORAGE_PREFIX='vigram_sites_', PUBLIC_INDEX_KEY='vigram_public_index', DELETED_KEY='vigram_deleted_sites';
+const TABLE='VigramSites';
+const SITES_ROOT = 'sites';
+
+const $ = id => document.getElementById(id);
+function toast(msg, type) {
+  const t = $('toast'); if (!t) return;
+  t.textContent = msg; t.className = 'toast show' + (type?' '+type:'');
+  clearTimeout(window.__tt); window.__tt = setTimeout(()=>t.classList.remove('show'), 3200);
+}
+function slugify(s){return (s||'').toString().toLowerCase().trim().replace(/[^\w\s-]/g,'').replace(/\s+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');}
+function escapeHtml(s){return s==null?'':String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function escapeAttr(s){return escapeHtml(s).replace(/`/g,'&#96;');}
+function safeUrl(u){return /^https?:\/\//i.test(u||'') ? u : '#';}
+function uid(){return 'site_'+Date.now()+'_'+Math.random().toString(36).substr(2,6);}
+function b64(s){return btoa(unescape(encodeURIComponent(s)));}
+function ownerNameOf(u){return u.name || (u.email||'').split('@')[0] || 'کاربر';}
+function jget(k,d){try{const r=localStorage.getItem(k);return r?JSON.parse(r):d;}catch(e){return d;}}
+function jset(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true;}catch(e){return false;}}
+const loadSitesFromStorage = uid_ => jget(STORAGE_PREFIX+uid_, []);
+function saveSitesToStorage(userId, sites){
+  const light = sites.map(s=>s);
+  if (!jset(STORAGE_PREFIX+userId, light)) {
+    jset(STORAGE_PREFIX+userId, sites.map(s=>({...s, htmlContent: s.htmlContent && s.htmlContent.length>200000?'':s.htmlContent})));
+  }
+  const idx = getPublicIndex().filter(s=>s.ownerId!==userId);
+  sites.filter(s=>s.isPublic && !s.isTrashed && s.liveUrl).forEach(s=>idx.push({id:s.id,title:s.title,description:s.description,ownerId:s.ownerId,ownerName:s.ownerName,views:s.views||0,updated:s.updated,liveUrl:s.liveUrl,mode:s.mode||'builder'}));
+  jset(PUBLIC_INDEX_KEY, idx);
+}
+const getPublicIndex = () => jget(PUBLIC_INDEX_KEY, []);
+const getDeletedSites = () => jget(DELETED_KEY, []);
+function markAsDeleted(id){const d=getDeletedSites();if(!d.includes(id))d.push(id);jset(DELETED_KEY,d);}
+const isDeleted = id => getDeletedSites().includes(id);
+const hasBL = () => typeof Backendless !== 'undefined';
+
+function siteDir(site){
+  const ownerId = (site && (site.ownerId || site.userId)) || (currentUser && (currentUser.objectId || currentUser.id)) || 'unknown';
+  const siteId = (site && site.id) || 'unknown';
+  return `${SITES_ROOT}/${ownerId}/${siteId}`;
+}
+function siteFileName(){ return 'index.html'; }
+const sitePath = s => siteDir(s);
+const siteFile = s => siteFileName();
+
+async function uploadFile(dir, name, content, type){
+  try { await Backendless.Files.remove(dir + '/' + name); } catch(e){}
+  const f = new File([content], name, { type });
+  const res = await Backendless.Files.upload(f, dir, true);
+  return res.fileURL;
+}
+async function cloudSave(site){
+  if(!hasBL()||!currentUser) return;
+  try{
+    const dataUrl = await uploadFile(`sites_data/${site.ownerId}`, `${site.id}.json`, JSON.stringify(site), 'application/json');
+    const row = {siteId:site.id, ownerId:site.ownerId, ownerName:site.ownerName, title:site.title, description:site.description||'',
+      isPublic:!!site.isPublic && !site.isTrashed && !!site.liveUrl, trashed:!!site.isTrashed, liveUrl:site.liveUrl||'', views:site.views||0,
+      mode:site.mode||'builder', dataUrl, updatedAt:site.updated};
+    if(site.objId) row.objectId = site.objId;
+    const saved = await Backendless.Data.of(TABLE).save(row);
+    site.objId = saved.objectId;
+  }catch(e){console.warn('cloudSave:', e&&e.message);}
+}
+async function cloudLoad(){
+  const local = loadSitesFromStorage(currentUser.objectId).filter(s=>!isDeleted(s.id));
+  if(!hasBL()){userSites=local;return;}
+  try{
+    const q = Backendless.DataQueryBuilder.create().setWhereClause(`ownerId='${currentUser.objectId}'`).setPageSize(100);
+    const rows = await Backendless.Data.of(TABLE).find(q);
+    const map = new Map(local.map(s=>[s.id,s]));
+    for(const r of rows){
+      if(isDeleted(r.siteId)) continue;
+      const l = map.get(r.siteId);
+      if(l && (l.updated||'') >= (r.updatedAt||'')){l.objId=r.objectId;continue;}
+      try{const s=await (await fetch(r.dataUrl+'?t='+Date.now())).json(); s.objId=r.objectId; map.set(s.id,s);}catch(e){}
+    }
+    userSites=[...map.values()].sort((a,b)=>(b.updated||'').localeCompare(a.updated||''));
+    saveSitesToStorage(currentUser.objectId, userSites);
+    userSites.filter(s=>!s.objId).forEach(cloudSave);
+  }catch(e){userSites=local;}
+}
+function persist(site){
+  saveSitesToStorage(currentUser.objectId, userSites);
+  if(site) cloudSave(site).then(()=>saveSitesToStorage(currentUser.objectId, userSites));
 }
 
-// ==========================================
-// احراز هویت
-// ==========================================
-function toggleAuthMode() {
+function sanitizeUserHtml(html){
+  if(!html) return '';
+  let h = String(html);
+  const forbidden = ['object','embed','applet','frame','frameset','base'];
+  for(const tag of forbidden){
+    h = h.replace(new RegExp('<'+tag+'\\b[^>]*>[\\s\\S]*?<\\/'+tag+'>','gi'),'');
+    h = h.replace(new RegExp('<'+tag+'\\b[^>]*\\/?>','gi'),'');
+  }
+  h = h.replace(/\son[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi,'');
+  h = h.replace(/(href|src|action|formaction)\s*=\s*(["'])\s*javascript:[^"']*\2/gi,'$1=$2#$2');
+  h = h.replace(/<meta[^>]*http-equiv\s*=\s*["']refresh["'][^>]*>/gi,'');
+  h = h.replace(/<\?(php|=)/gi,'&lt;?$1');
+  return h;
+}
+
+const SECURITY_SCAN_PATTERNS = [
+  {re:/fetch\s*\(\s*['"`]https?:\/\/(?!cdn\.jsdelivr\.net|cdnjs\.cloudflare\.com)/gi, msg:'درخواست شبکه به دامنه غیرمجاز'},
+  {re:/XMLHttpRequest\s*\(\s*\)[\s\S]{0,50}\.open\s*\(\s*['"`][^'"`]*https?:\/\//gi, msg:'XHR به دامنه خارجی'},
+  {re:/document\.cookie/gi, msg:'دسترسی به کوکی'},
+  {re:/localStorage\s*[\.\[]/g, msg:'دسترسی به localStorage'},
+  {re:/sessionStorage\s*[\.\[]/g, msg:'دسترسی به sessionStorage'},
+  {re:/window\.(parent|top)\s*\.\s*document/gi, msg:'تلاش برای دسترسی به پنجره اصلی'},
+  {re:/top\.location\s*=/gi, msg:'تلاش برای هدایت پنجره اصلی'},
+  {re:/eval\s*\(\s*(atob|decodeURIComponent)/gi, msg:'eval مبهم'},
+  {re:/new\s+Function\s*\(\s*['"`]return/gi, msg:'Function constructor مشکوک'},
+  {re:/<iframe\b[^>]*src\s*=\s*['"`]https?:/gi, msg:'iframe خارجی'},
+  {re:/navigator\.(clipboard|geolocation|mediaDevices)/gi, msg:'دسترسی به API حساس مرورگر'},
+  {re:/<script\b[^>]*src\s*=\s*['"`](?:https?:)?\/\/(?!cdn\.jsdelivr\.net|cdnjs\.cloudflare\.com)/gi, msg:'اسکریپت از دامنه غیرمجاز'},
+];
+
+/* ✅ اسکنر اصلی (low-level): فقط یک‌بار تعریف شده — بدون بازگشت */
+function performSecurityScan(code, opts){
+  opts = opts || {};
+  const findings = [];
+  if(!code) return {ok:true, findings:[]};
+  for(const p of SECURITY_SCAN_PATTERNS){
+    try {
+      const m = code.match(p.re);
+      if(m && m.length){ findings.push({msg:p.msg, sample:String(m[0]).slice(0,80)}); }
+    } catch(e){}
+  }
+  const extra = (opts.allowDomains||[]).filter(Boolean);
+  if(extra.length){
+    const urlRe=/https?:\/\/([a-z0-9.-]+)/gi; let m;
+    while((m=urlRe.exec(code))){
+      const host = m[1].toLowerCase();
+      if(!/cdn\.jsdelivr\.net|cdnjs\.cloudflare\.com|api\.backendless\.com|picsum\.photos/.test(host) && !extra.some(d=>host===d || host.endsWith('.'+d))){
+        findings.push({msg:'دامنه غیرمجاز: '+host});
+      }
+    }
+  }
+  return {ok: findings.length===0, findings};
+}
+
+function buildPermissionsPolicy(sec){
+  const s = sec||{};
+  const media = s.mediaBlock !== false ? 'camera=(), microphone=()' : 'camera=(self), microphone=(self)';
+  const geo = s.geoBlock !== false ? 'geolocation=()' : 'geolocation=(self)';
+  return [media, geo, 'payment=()', 'usb=()'].join(', ');
+}
+
+function toggleAuthMode(){
   isLoginMode = !isLoginMode;
-  document.getElementById('authUsername').style.display = isLoginMode ? 'none' : 'block';
-  document.getElementById('submitAuthBtn').textContent = isLoginMode ? 'ورود' : 'ثبت‌نام';
-  document.getElementById('switchAuth').textContent = isLoginMode ? 'حساب ندارید؟ ثبت‌نام کنید' : 'حساب دارید؟ وارد شوید';
+  $('authUsername').style.display = isLoginMode?'none':'block';
+  $('authTitle').textContent = isLoginMode?'خوش آمدید':'عضویت';
+  $('submitAuthBtn').textContent = isLoginMode?'ورود':'ثبت‌نام';
+  $('switchAuth').innerHTML = isLoginMode?'حساب ندارید؟ <b>ثبت‌نام کنید</b>':'حساب دارید؟ <b>وارد شوید</b>';
 }
-function openAuth() { document.getElementById('authModal').classList.add('show'); }
-function closeAuth() { document.getElementById('authModal').classList.remove('show'); }
+function openAuth(){ $('authModal').classList.add('show'); }
+function closeModal(id){ $(id).classList.remove('show'); }
 
-async function handleAuth() {
-  if (typeof Backendless === 'undefined') { toast('خطا: سرور متصل نیست.', true); return; }
-
-  const email = cleanEmail(document.getElementById('authEmail').value);
-  const password = document.getElementById('authPassword').value;
-  const username = document.getElementById('authUsername').value.trim();
-
-  if (!email || !password || (!isLoginMode && !username)) {
-    toast('لطفاً همه فیلدها را پر کنید.', true); return;
-  }
-
-  try {
-    if (isLoginMode) {
-      await Backendless.UserService.login(email, password, true);
-    } else {
-      const user = new Backendless.User();
-      user.email = email;
-      user.password = password;
-      user.name = username;
-      
-      await Backendless.UserService.register(user);
-      await Backendless.UserService.login(email, password, true);
+async function handleAuth(){
+  if(!hasBL()){toast('خطا: سرور متصل نیست.', 'error');return;}
+  const email = ($('authEmail').value||'').trim().toLowerCase();
+  const password = $('authPassword').value, username = $('authUsername').value.trim();
+  if(!email||!password||(!isLoginMode&&!username)){toast('همه فیلدها را پر کنید.','error');return;}
+  const btn=$('submitAuthBtn'), orig=btn.textContent;
+  btn.textContent='در حال پردازش...'; btn.disabled=true;
+  try{
+    if(isLoginMode) await Backendless.UserService.login(email,password,true);
+    else{
+      const u = new Backendless.User(); u.email=email; u.password=password; u.name=username;
+      await Backendless.UserService.register(u);
+      await Backendless.UserService.login(email,password,true);
     }
-    
-    closeAuth();
-    checkUserSession();
-    loadVideosFromServer();
-    toast('خوش آمدید!');
-    
-  } catch (err) {
-    console.error(err);
-    let msg = err.message || 'خطا در احراز هویت';
-    if (msg.includes('already exists')) msg = 'این ایمیل قبلاً ثبت شده است.';
-    if (msg.includes('Invalid login')) msg = 'ایمیل یا رمز عبور اشتباه است.';
-    if (msg.includes('Column \'name\' does not exist')) {
-      msg = 'خطا: لطفاً ستون name را در Backendless بسازید.';
-    }
-    toast(msg, true);
-  }
+    closeModal('authModal'); checkUserSession(); await cloudLoad(); updateUI(); toast('خوش آمدید!','success');
+  }catch(err){
+    let msg = err.message||'خطا';
+    if(msg.includes('already exists')) msg='این ایمیل قبلاً ثبت شده است.';
+    if(msg.includes('Invalid login')) msg='ایمیل یا رمز عبور اشتباه است.';
+    toast(msg,'error');
+  }finally{ btn.textContent=orig; btn.disabled=false; }
 }
-
-async function logout() {
-  if (typeof Backendless !== 'undefined') { await Backendless.UserService.logout().catch(()=>{}); }
-  currentUser = null;
-  updateTopbar();
-  switchView('home');
-  toast('خارج شدید.');
+async function handleLogout(){
+  if(hasBL()) await Backendless.UserService.logout().catch(()=>{});
+  currentUser=null; userSites=[]; updateUI(); switchView('dashboard'); toast('خارج شدید.');
 }
+function checkUserSession(){ if(!hasBL()) return; try{ currentUser = Backendless.UserService.getCurrentUser(); }catch(e){ currentUser=null; } }
 
-function checkUserSession() {
-  if (typeof Backendless === 'undefined') return;
-  currentUser = Backendless.UserService.getCurrentUser();
-  updateTopbar();
-}
-
-function updateTopbar() {
-  const topActions = document.getElementById('topActions');
-  if (currentUser) {
-    const name = getUserName(currentUser);
-    const avatar = getUserAvatar(currentUser);
-    
-    topActions.innerHTML = `
-      <i class="fas fa-bell"></i>
-      <div class="user-avatar-top" onclick="switchView('profile')">
-        ${avatar ? `<img src="${avatar}">` : name.charAt(0).toUpperCase()}
-      </div>
-      <i class="fas fa-sign-out-alt" onclick="logout()" title="خروج" style="cursor:pointer; font-size:16px;"></i>
-    `;
-    
-    document.getElementById('profileAvatar').innerHTML = avatar ? `<img src="${avatar}">` : name.charAt(0).toUpperCase();
-    document.getElementById('profileName').textContent = name;
+function updateUI(){
+  const uc=$('userCard'), tr=$('topbarRight');
+  if(currentUser){
+    const name = ownerNameOf(currentUser);
+    uc.style.display='flex'; $('userName').textContent=name; $('userEmail').textContent=currentUser.email||''; $('userAvatar').textContent=name.charAt(0).toUpperCase();
+    tr.innerHTML = `<button class="btn btn-ghost btn-sm" onclick="openNewUploadModal()"><i class="fas fa-upload"></i> آپلود</button><button class="btn btn-primary btn-sm" onclick="openNewSiteModal()"><i class="fas fa-plus"></i> ساخت</button>`;
   } else {
-    topActions.innerHTML = `
-      <i class="fas fa-bell"></i>
-      <button class="auth-btn" onclick="openAuth()"><i class="fas fa-sign-in-alt"></i> ورود / ثبت‌نام</button>
-    `;
+    uc.style.display='none';
+    tr.innerHTML = `<button class="btn btn-primary btn-sm" onclick="openAuth()"><i class="fas fa-sign-in-alt"></i> ورود</button>`;
   }
+  renderAll();
 }
 
-// ==========================================
-// ویرایش پروفایل و آواتار
-// ==========================================
-function openEditProfile() {
-  if (!currentUser) { openAuth(); return; }
-  document.getElementById('editNameInput').value = getUserName(currentUser);
-  pendingAvatarData = null;
-  document.getElementById('editProfileModal').classList.add('show');
-}
-function closeEditProfile() { document.getElementById('editProfileModal').classList.remove('show'); }
+function emptyState(icon,title,sub){return `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon"><i class="fas fa-${icon}"></i></div><h3>${title}</h3><p>${sub}</p></div>`;}
+const findSite = id => userSites.find(s=>s.id===id);
+function ownerUrl(s){const sec=s.security||{};return (sec.password && sec.passwordValue && s.isPublic) ? s.liveUrl+'#p='+encodeURIComponent(sec.passwordValue) : s.liveUrl;}
+function openSiteUrl(id){const s=findSite(id)||getPublicIndex().find(x=>x.id===id);if(s&&s.liveUrl)window.open(ownerUrl(s),'_blank','noopener');}
+function copySiteUrl(id){const s=findSite(id);if(s&&s.liveUrl)copyText(s.liveUrl);}
+function openExplore(i){const s=exploreRows[i];if(s&&s.liveUrl)window.open(s.liveUrl,'_blank','noopener');}
 
-async function saveProfileChanges() {
-  if (!currentUser) return;
-  const newName = document.getElementById('editNameInput').value.trim();
-  if (!newName) { toast('نام نمی‌تواند خالی باشد.', true); return; }
-  
-  try {
-    const updateData = { name: newName };
-    if (pendingAvatarData) { updateData.avatarUrl = pendingAvatarData; }
-    
-    await Backendless.Data.of("Users").save({ objectId: currentUser.objectId, ...updateData });
-    
-    currentUser.name = newName;
-    if (pendingAvatarData) currentUser.avatarUrl = pendingAvatarData;
-    
-    closeEditProfile();
-    updateTopbar();
-    renderProfile();
-    toast('پروفایل با موفقیت آپدیت شد!');
-  } catch(err) {
-    console.error(err);
-    toast('خطا در ذخیره: ' + err.message, true);
+function renderSiteCard(site){
+  const html = site.mode==='html';
+  const short = site.liveUrl ? (site.liveUrl.length>35?site.liveUrl.slice(0,35)+'...':site.liveUrl) : 'منتشر نشده';
+  return `<div class="site-card" onclick="openEditor('${site.id}')">
+    <div class="site-card-thumb ${html?'html-thumb':''}"><i class="fas ${html?'fa-file-code':'fa-cube'}"></i></div>
+    <div class="site-card-title">${escapeHtml(site.title)}</div>
+    <div class="site-card-slug"><i class="fas fa-link"></i> ${escapeHtml(short)}</div>
+    <div class="site-card-meta"><span><i class="fas fa-eye"></i> ${site.views||0}</span>
+      ${site.isPublic?'<span><i class="fas fa-globe" style="color:var(--success)"></i> عمومی</span>':'<span><i class="fas fa-lock"></i> خصوصی</span>'}
+      ${html?'<span><i class="fas fa-code" style="color:var(--accent)"></i> HTML</span>':''}</div>
+    <div class="site-card-actions">
+      <button class="btn btn-primary" onclick="event.stopPropagation();openEditor('${site.id}')"><i class="fas fa-pen"></i> ویرایش</button>
+      ${site.liveUrl?`<button class="btn btn-ghost" onclick="event.stopPropagation();openSiteUrl('${site.id}')"><i class="fas fa-eye"></i></button><button class="btn btn-ghost" onclick="event.stopPropagation();copySiteUrl('${site.id}')"><i class="fas fa-link"></i></button>`:''}
+      <button class="btn btn-ghost" onclick="event.stopPropagation();trashSite('${site.id}')" title="سطل بازیافت"><i class="fas fa-box-archive"></i></button>
+      <button class="btn btn-danger" onclick="event.stopPropagation();openDeleteModal('${site.id}')"><i class="fas fa-trash"></i></button>
+    </div></div>`;
+}
+function renderAll(){
+  const active = userSites.filter(s=>!s.isTrashed), trashed = userSites.filter(s=>s.isTrashed);
+  $('recentSitesGrid').innerHTML = active.length ? active.slice(0,3).map(renderSiteCard).join('') : emptyState('globe','هنوز سایتی نساخته‌اید','با ویرایشگر بسازید یا فایل HTML آپلود کنید');
+  $('sitesGrid').innerHTML = active.length ? active.map(renderSiteCard).join('') : emptyState('globe','هنوز سایتی نساخته‌اید','اولین سایت خود را بسازید');
+  $('trashGrid').innerHTML = trashed.length ? trashed.map(s=>`<div class="site-card"><div class="site-card-title">${escapeHtml(s.title)}</div><div class="site-card-actions">
+      <button class="btn btn-ghost" onclick="restoreSite('${s.id}')"><i class="fas fa-undo"></i> بازیابی</button>
+      <button class="btn btn-danger" onclick="openDeleteModal('${s.id}')"><i class="fas fa-times"></i> حذف دائمی</button></div></div>`).join('')
+    : emptyState('trash','سطل بازیافت خالی است','سایت‌های حذف‌شده اینجا نمایش داده می‌شوند');
+  $('statSites').textContent = active.length;
+  $('statViews').textContent = active.reduce((a,s)=>a+(s.views||0),0);
+  $('statEdits').textContent = active.filter(s=>s.mode==='html').length;
+  $('statShares').textContent = active.filter(s=>s.isPublic).length;
+}
+
+function switchView(name){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(n=>n.classList.remove('active'));
+  const titles = {dashboard:'داشبورد',sites:'سایت‌های من',explore:'کاوش',trash:'سطل بازیافت',editor:'ویرایشگر'};
+  $('pageTitle').textContent = titles[name]||'';
+  $('sidebar').classList.remove('open');
+  const map = {dashboard:'viewDashboard',sites:'viewSites',explore:'viewExplore',trash:'viewTrash',editor:'viewEditor'};
+  $(map[name]).classList.add('active');
+  const nl = $('nav-'+name); if(nl) nl.classList.add('active');
+  if(name==='explore') loadPublicSites();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function openNewSiteModal(){ if(!currentUser){openAuth();return;} $('newSiteTitle').value=''; $('newSiteSlug').value=''; $('newSiteModal').classList.add('show'); }
+function baseSite(title,slug){
+  return {id:uid(),title,slug,description:'',blocks:[],theme:{...currentTheme},isPublic:false,isTrashed:false,views:0,liveUrl:'',
+    mode:'builder',htmlContent:'',security:{...currentSecurity,password:false,passwordValue:''},created:new Date().toISOString(),updated:new Date().toISOString(),
+    ownerId:currentUser.objectId,ownerName:ownerNameOf(currentUser)};
+}
+function createNewSite(){
+  const title=$('newSiteTitle').value.trim();
+  if(!title){toast('عنوان را وارد کنید.','error');return;}
+  const slug = slugify($('newSiteSlug').value.trim()||title)||'site-'+Date.now();
+  closeModal('newSiteModal');
+  const s = baseSite(title,slug);
+  s.blocks=[{id:uid(),type:'hero',content:{title,subtitle:'به سایت من خوش آمدید'}},{id:uid(),type:'text',content:{text:'این متن نمونه است. از پنل کنار، ویرایش کن.'}}];
+  userSites.unshift(s); persist(s); renderAll(); openEditor(s.id);
+  toast('سایت ساخته شد! ویرایش کن و منتشر کن.','success');
+}
+function openNewUploadModal(){
+  if(!currentUser){openAuth();return;}
+  $('uploadSiteTitle').value=''; $('modalFileInfo').style.display='none'; pendingUploadFile=null; $('newUploadModal').classList.add('show');
+}
+function handleModalHtmlFile(input){
+  const f = input.files && input.files[0]; if(!f) return;
+  if(f.size>5*1024*1024){toast('فایل باید کمتر از ۵ مگابایت باشد.','error');return;}
+  if(!/\.html?$/i.test(f.name)){toast('فقط فایل .html یا .htm قبول است.','error');return;}
+  pendingUploadFile = f;
+  const info=$('modalFileInfo'); info.style.display='block'; info.innerHTML = `<i class="fas fa-check"></i> ${escapeHtml(f.name)} — ${(f.size/1024).toFixed(1)} KB`;
+  if(!$('uploadSiteTitle').value) $('uploadSiteTitle').value = f.name.replace(/\.html?$/i,'');
+}
+async function uploadHtmlAndPublish(){
+  if(!pendingUploadFile){toast('اول فایل HTML را انتخاب کن.','error');return;}
+  if(!currentUser){openAuth();return;}
+  const btn=$('uploadPublishBtn'), orig=btn.innerHTML;
+  btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> در حال آپلود...'; btn.disabled=true;
+  try{
+    let content = await pendingUploadFile.text();
+    content = sanitizeUserHtml(content);
+    if(currentSecurity.preflight){
+      const scan = performSecurityScan(content, {allowDomains: currentSecurity.allowDomains});
+      if(!scan.ok){
+        const proceed = confirm('کد خطرناک تشخیص داده شد:\n'+scan.findings.map(f=>'• '+f.msg).join('\n')+'\n\nادامه می‌دهی؟');
+        if(!proceed){ btn.innerHTML=orig; btn.disabled=false; return; }
+      }
+    }
+    const title = $('uploadSiteTitle').value.trim() || pendingUploadFile.name.replace(/\.html?$/i,'');
+    const s = baseSite(title, slugify(title)||'site_'+Date.now());
+    s.mode='html'; s.htmlContent=content;
+    await publishSite(s);
+    userSites.unshift(s); persist(s); renderAll();
+    closeModal('newUploadModal'); showShareModal(s.liveUrl); toast('سایت آنلاین شد!','success');
+  }catch(err){console.error(err);toast('خطا: '+(err.message||'نامشخص'),'error');}
+  finally{ btn.innerHTML=orig; btn.disabled=false; pendingUploadFile=null; }
+}
+
+function openEditor(id){
+  try{
+    const site = findSite(id); if(!site){toast('سایت پیدا نشد','error');return;}
+    editingSite = JSON.parse(JSON.stringify(site));
+    currentBlocks = editingSite.blocks||[];
+    currentTheme = {bgColor:'#ffffff',textColor:'#111111',font:'Vazirmatn',radius:'16px',...(editingSite.theme||{})};
+    currentSecurity = {...defaultSecurity(), ...(editingSite.security||{})};
+    $('siteTitleInput').value = editingSite.title||'';
+    $('siteSlugInput').value = editingSite.slug||'';
+    $('siteDescInput').value = editingSite.description||'';
+    $('sitePublicInput').checked = !!editingSite.isPublic;
+    $('htmlCodeEditor').value = editingSite.htmlContent||'';
+    syncSecurityUI();
+    updateModeBadge(); updateLiveUrlUI(); updatePublishStatus(); renderBlocksList(); renderColorGrids(); renderTheme();
+    renderSecurityStatus(); updateSitePathInfo(); reloadPreviewFrame();
+    switchEditorTab(editingSite.mode==='html'?'html':'content');
+    switchView('editor');
+  }catch(err){console.error(err);toast('خطا در باز کردن ویرایشگر: '+err.message,'error');}
+}
+function updateSitePathInfo(){
+  const el = $('sitePathInfo'); if(!el || !editingSite) return;
+  el.textContent = siteDir(editingSite) + '/' + siteFileName();
+}
+function updateModeBadge(){
+  const b = $('modeBadge'); if(!b||!editingSite) return;
+  const h = editingSite.mode==='html';
+  b.className='mode-badge '+(h?'html':'builder');
+  b.innerHTML = h?'<i class="fas fa-code"></i> حالت HTML مستقیم':'<i class="fas fa-cube"></i> حالت ویرایشگر بلوکی';
+}
+function updatePublishStatus(){
+  const live = editingSite && editingSite.liveUrl;
+  $('publishStatus').className = 'publish-bar-info'+(live?' published':'');
+  $('publishStatusText').textContent = live?'منتشر شده':'پیش‌نویس';
+}
+function updateLiveUrlUI(){
+  const live = editingSite && editingSite.liveUrl;
+  $('liveUrlContainer').style.display = live?'block':'none';
+  $('noLiveUrlContainer').style.display = live?'none':'block';
+  if(live) $('liveUrl').textContent = editingSite.liveUrl;
+}
+function switchEditorTab(tab){
+  currentEditorTab = tab;
+  document.querySelectorAll('.editor-tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===tab));
+  const ids = ['content','theme','html','settings','security','console'];
+  ids.forEach(t=>{ const el=$('tab'+t[0].toUpperCase()+t.slice(1)); if(el) el.style.display = t===tab?'block':'none'; });
+}
+function renderBlocksList(){
+  const list = $('blocksList');
+  if(!currentBlocks.length){ list.innerHTML='<p style="color:var(--muted);font-size:11px;text-align:center;padding:12px">هنوز بلوکی اضافه نشده</p>'; return; }
+  list.innerHTML = currentBlocks.map((b,i)=>{
+    const info = BLOCK_TYPES[b.type]||{name:b.type,icon:'fa-square'};
+    return `<div class="block-item"><i class="fas fa-grip-vertical drag"></i><span style="flex:1;margin-right:8px"><i class="fas ${info.icon}" style="color:var(--grad-1);margin-left:5px"></i> ${info.name}</span>
+      <div class="block-item-actions"><button onclick="editBlock(${i})"><i class="fas fa-pen"></i></button>
+      <button onclick="moveBlock(${i},-1)" ${i===0?'disabled':''}><i class="fas fa-arrow-up"></i></button>
+      <button onclick="moveBlock(${i},1)" ${i===currentBlocks.length-1?'disabled':''}><i class="fas fa-arrow-down"></i></button>
+      <button class="danger" onclick="deleteBlock(${i})"><i class="fas fa-trash"></i></button></div></div>`;
+  }).join('');
+}
+function addBlock(type){
+  if(!editingSite) return;
+  const d = { hero:{title:'عنوان جدید',subtitle:'زیرعنوان'}, text:{text:'متن جدید'}, image:{url:'https://picsum.photos/600/400',caption:''},
+    gallery:{images:['https://picsum.photos/400/300?1','https://picsum.photos/400/300?2']}, list:{items:['آیتم اول','آیتم دوم']},
+    quote:{text:'نقل قول شما',author:'نویسنده'}, button:{label:'کلیک کنید',url:'#'}, divider:{} };
+  currentBlocks.push({id:uid(),type,content:d[type]||{}});
+  if(editingSite.mode==='html'){ editingSite.mode='builder'; updateModeBadge(); }
+  renderBlocksList(); reloadPreviewFrame();
+}
+function moveBlock(i,dir){const j=i+dir;if(j<0||j>=currentBlocks.length)return;[currentBlocks[i],currentBlocks[j]]=[currentBlocks[j],currentBlocks[i]];renderBlocksList();reloadPreviewFrame();}
+function deleteBlock(i){if(!confirm('این بلوک حذف شود؟'))return;currentBlocks.splice(i,1);renderBlocksList();reloadPreviewFrame();}
+function editBlock(i){
+  const b = currentBlocks[i], info = BLOCK_TYPES[b.type]||{name:b.type};
+  const keys = {hero:['title','subtitle'],text:['text'],quote:['text','author'],button:['label','url'],image:['url','caption']}[b.type];
+  if(b.type==='list'){const v=prompt('آیتم‌ها (هر خط یک آیتم):',(b.content.items||[]).join('\n'));if(v!==null){b.content.items=v.split('\n').filter(Boolean);renderBlocksList();reloadPreviewFrame();}return;}
+  if(b.type==='gallery'){const v=prompt('آدرس تصاویر (هر خط یک لینک):',(b.content.images||[]).join('\n'));if(v!==null){b.content.images=v.split('\n').filter(Boolean);reloadPreviewFrame();}return;}
+  if(!keys){toast('این بلوک محتوایی ندارد','error');return;}
+  for(const k of keys){const v=prompt(`${info.name} — ${k}:`,b.content[k]||'');if(v===null)break;b.content[k]=v;}
+  renderBlocksList(); reloadPreviewFrame();
+}
+function renderColorGrids(){
+  $('bgColorGrid').innerHTML = BG_COLORS.map(c=>`<div class="color-opt ${c===currentTheme.bgColor?'active':''}" style="background:${c}" onclick="setThemeColor('bgColor','${c}')"></div>`).join('');
+  $('textColorGrid').innerHTML = TEXT_COLORS.map(c=>`<div class="color-opt ${c===currentTheme.textColor?'active':''}" style="background:${c}" onclick="setThemeColor('textColor','${c}')"></div>`).join('');
+}
+function setThemeColor(k,v){currentTheme[k]=v;renderColorGrids();reloadPreviewFrame();}
+function renderTheme(){$('fontSelect').value=currentTheme.font||'Vazirmatn';$('radiusSelect').value=currentTheme.radius||'16px';}
+function updateTheme(){currentTheme.font=$('fontSelect').value;currentTheme.radius=$('radiusSelect').value;reloadPreviewFrame();}
+function updateSiteInfo(){
+  if(!editingSite) return;
+  editingSite.title=$('siteTitleInput').value; editingSite.slug=slugify($('siteSlugInput').value);
+  editingSite.description=$('siteDescInput').value; editingSite.isPublic=$('sitePublicInput').checked;
+  reloadPreviewFrame();
+}
+function toggleServerSettings(){
+  const p=$('serverSettingsPanel');
+  p.classList.toggle('show');
+  if(p.classList.contains('show')) renderServerSettingsContent();
+}
+function syncSecurityUI(){
+  const ids = {allowJS:'sec-allowjs',panelBlock:'sec-panelblock',storageBlock:'sec-storage',mediaBlock:'sec-media',geoBlock:'sec-geo',popupBlock:'sec-popups',topNavBlock:'sec-topnav',networkBlock:'sec-network',scriptBlock:'sec-scripts',preflight:'sec-preflight'};
+  for(const [k,id] of Object.entries(ids)){
+    const el = $(id); if(el) el.checked = !!currentSecurity[k];
   }
+  $('opt-encryption').checked = !!currentSecurity.encryption;
+  $('opt-protect').checked = !!currentSecurity.protect;
+  $('opt-noindex').checked = !!currentSecurity.noindex;
+  $('opt-ddos').checked = !!currentSecurity.ddos;
+  $('opt-password').checked = !!currentSecurity.password;
+  $('opt-cookie').checked = !!currentSecurity.cookie;
+  $('passwordField').style.display = currentSecurity.password?'block':'none';
+  $('sitePasswordInput').value = currentSecurity.passwordValue||'';
+  const adv = $('sec-allowdomains'); if(adv) adv.value = (currentSecurity.allowDomains||[]).join('\n');
 }
-
-async function setupAvatarUploader() {
-  try {
-    const UC = await import('https://cdn.jsdelivr.net/npm/@uploadcare/file-uploader@1/web/file-uploader.min.js');
-    UC.defineComponents(UC);
-    
-    const avatarCtx = document.querySelector('uc-upload-ctx-provider[ctx-name="avatar-uploader"]');
-    avatarCtx.addEventListener('common-upload-success', (e) => {
-      const entries = e.detail.successEntries || [];
-      if (!entries.length) return;
-      pendingAvatarData = entries[0].cdnUrl;
-      toast('آواتار آپلود شد. دکمه ذخیره را بزنید.');
-    });
-  } catch(e) { console.error(e); }
-}
-
-// ==========================================
-// لود ویدیوها
-// ==========================================
-async function loadVideosFromServer() {
-  if (typeof Backendless === 'undefined') return;
-  try {
-    const query = Backendless.DataQueryBuilder.create().setSortBy("created desc");
-    const result = await Backendless.Data.of("Videos").find(query);
-    videos = result.map(v => ({
-      objectId: v.objectId, id: v.objectId, uuid: v.videoUuid, url: v.videoUrl,
-      thumbnailUrl: v.thumbnailUrl, title: v.title, type: v.type,
-      uploaderId: v.uploaderId, uploader: v.uploaderName || 'کاربر',
-      timestamp: v.created, likes: v.likes || 0, views: v.views || 0
-    }));
-    renderHome();
-    renderShorts();
-    if (currentChannelId) loadChannelProfile(currentChannelId);
-  } catch (err) {
-    console.error("DB Error:", err);
-    document.getElementById('videoGrid').innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><h3>خطا در اتصال به سرور</h3><p style="font-size:13px; margin-top:10px;">${err.message}</p></div>`;
+function updateSecurity(){
+  const ids = {allowJS:'sec-allowjs',panelBlock:'sec-panelblock',storageBlock:'sec-storage',mediaBlock:'sec-media',geoBlock:'sec-geo',popupBlock:'sec-popups',topNavBlock:'sec-topnav',networkBlock:'sec-network',scriptBlock:'sec-scripts',preflight:'sec-preflight'};
+  for(const [k,id] of Object.entries(ids)){
+    const el = $(id); if(el) currentSecurity[k] = el.checked;
   }
+  currentSecurity.encryption = $('opt-encryption').checked;
+  currentSecurity.protect = $('opt-protect').checked;
+  currentSecurity.noindex = $('opt-noindex').checked;
+  currentSecurity.ddos = $('opt-ddos').checked;
+  currentSecurity.password = $('opt-password').checked;
+  currentSecurity.cookie = $('opt-cookie').checked;
+  currentSecurity.passwordValue = $('sitePasswordInput').value;
+  $('passwordField').style.display = currentSecurity.password?'block':'none';
+  const adv = $('sec-allowdomains');
+  if(adv) currentSecurity.allowDomains = adv.value.split('\n').map(s=>s.trim()).filter(Boolean);
+  editingSite.security = {...currentSecurity};
+  renderSecurityStatus();
+  reloadPreviewFrame();
 }
-
-// ==========================================
-// رندر و گرافیک
-// ==========================================
-function filterVideos(list) {
-  if (!currentSearchQuery) return list;
-  const q = currentSearchQuery.toLowerCase();
-  return list.filter(v => v.title.toLowerCase().includes(q) || (v.uploader || '').toLowerCase().includes(q));
+function renderSecurityStatus(){
+  const s = currentSecurity;
+  const badges = [
+    [s.allowJS,'JS فعال'],[s.panelBlock,'پنل بلاک'],[s.storageBlock,'Storage بلاک'],
+    [s.mediaBlock,'Media بلاک'],[s.geoBlock,'Geo بلاک'],[s.popupBlock,'Popup بلاک'],
+    [s.topNavBlock,'TopNav بلاک'],[s.networkBlock,'Network محدود'],[s.scriptBlock,'Script محدود'],
+    [s.preflight,'Preflight']
+  ];
+  $('securityStatus').innerHTML = badges.map(([on,label])=>`<span class="security-badge ${on?'on':'off'}">${on?'✓':'✗'} ${label}</span>`).join('');
 }
-
-function createVideoCardHTML(v) {
-  const thumbSrc = v.thumbnailUrl || FALLBACK_THUMB;
-  const uploaderName = v.uploader || 'کاربر';
-  return `
-    <div class="video-card" onclick="openPlayer('${v.id}')">
-      <div class="video-card-thumb">
-        <div class="thumb-skeleton"></div>
-        <img src="${thumbSrc}" loading="lazy" onload="this.classList.add('loaded'); this.previousElementSibling.style.display='none';" onerror="this.src='${FALLBACK_THUMB}'; this.classList.add('loaded'); this.previousElementSibling.style.display='none';">
-      </div>
-      <div class="video-card-info">
-        <div class="channel-avatar">${uploaderName.charAt(0).toUpperCase()}</div>
-        <div class="video-meta">
-          <div class="video-title">${v.title}</div>
-          <div class="video-channel-name">${uploaderName}</div>
-          <div class="video-stats">${formatNum(v.views)} بازدید • ${formatDate(v.timestamp)}</div>
-        </div>
-      </div>
-    </div>
+function renderServerSettingsContent(){
+  $('serverSettingsContent').innerHTML = `
+    <div class="setting-item"><div class="setting-item-header"><div class="setting-item-title"><i class="fas fa-code"></i> JS</div><label class="toggle"><input type="checkbox" id="ss-js" ${currentSecurity.allowJS?'checked':''} onchange="toggleSS('allowJS',this.checked)"><span class="toggle-slider"></span></label></div></div>
+    <div class="setting-item"><div class="setting-item-header"><div class="setting-item-title"><i class="fas fa-ban"></i> پنل بلاک</div><label class="toggle"><input type="checkbox" id="ss-panel" ${currentSecurity.panelBlock?'checked':''} onchange="toggleSS('panelBlock',this.checked)"><span class="toggle-slider"></span></label></div></div>
+    <div class="setting-item"><div class="setting-item-header"><div class="setting-item-title"><i class="fas fa-database"></i> Storage بلاک</div><label class="toggle"><input type="checkbox" id="ss-storage" ${currentSecurity.storageBlock?'checked':''} onchange="toggleSS('storageBlock',this.checked)"><span class="toggle-slider"></span></label></div></div>
+    <div class="setting-item"><div class="setting-item-header"><div class="setting-item-title"><i class="fas fa-camera"></i> Media بلاک</div><label class="toggle"><input type="checkbox" id="ss-media" ${currentSecurity.mediaBlock?'checked':''} onchange="toggleSS('mediaBlock',this.checked)"><span class="toggle-slider"></span></label></div></div>
+    <div class="setting-item"><div class="setting-item-header"><div class="setting-item-title"><i class="fas fa-map-marker-alt"></i> Geo بلاک</div><label class="toggle"><input type="checkbox" id="ss-geo" ${currentSecurity.geoBlock?'checked':''} onchange="toggleSS('geoBlock',this.checked)"><span class="toggle-slider"></span></label></div></div>
+    <div class="setting-item"><div class="setting-item-header"><div class="setting-item-title"><i class="fas fa-window-restore"></i> Popup بلاک</div><label class="toggle"><input type="checkbox" id="ss-popup" ${currentSecurity.popupBlock?'checked':''} onchange="toggleSS('popupBlock',this.checked)"><span class="toggle-slider"></span></label></div></div>
+    <div class="setting-item"><div class="setting-item-header"><div class="setting-item-title"><i class="fas fa-lock"></i> TopNav بلاک</div><label class="toggle"><input type="checkbox" id="ss-topnav" ${currentSecurity.topNavBlock?'checked':''} onchange="toggleSS('topNavBlock',this.checked)"><span class="toggle-slider"></span></label></div></div>
+    <div class="setting-item"><div class="setting-item-header"><div class="setting-item-title"><i class="fas fa-network-wired"></i> Network محدود</div><label class="toggle"><input type="checkbox" id="ss-network" ${currentSecurity.networkBlock?'checked':''} onchange="toggleSS('networkBlock',this.checked)"><span class="toggle-slider"></span></label></div></div>
+    <div class="setting-item"><div class="setting-item-header"><div class="setting-item-title"><i class="fas fa-code-branch"></i> Script محدود</div><label class="toggle"><input type="checkbox" id="ss-script" ${currentSecurity.scriptBlock?'checked':''} onchange="toggleSS('scriptBlock',this.checked)"><span class="toggle-slider"></span></label></div></div>
+    <div class="setting-item"><div class="setting-item-header"><div class="setting-item-title"><i class="fas fa-clipboard-check"></i> Preflight</div><label class="toggle"><input type="checkbox" id="ss-preflight" ${currentSecurity.preflight?'checked':''} onchange="toggleSS('preflight',this.checked)"><span class="toggle-slider"></span></label></div></div>
   `;
 }
-
-function renderHome() {
-  const grid = document.getElementById('videoGrid');
-  const shortsSection = document.getElementById('shortsSection');
-  const filteredVideos = filterVideos(videos);
-  
-  // رندر شورت‌ها (چه سرچ شده باشه چه نه)
-  const shorts = filteredVideos.filter(v => v.type === 'short');
-  if (shorts.length > 0) {
-    shortsSection.style.display = 'block';
-    document.getElementById('shortsScroll').innerHTML = shorts.map(s => `
-      <div style="width:130px; height:230px; border-radius:12px; overflow:hidden; flex-shrink:0; cursor:pointer; position:relative; background:#000; border: 1px solid var(--border);" onclick="openPlayer('${s.id}')">
-        <img src="${s.thumbnailUrl || FALLBACK_THUMB}" loading="lazy" style="width:100%; height:100%; object-fit:cover;">
-        <div style="position:absolute; bottom:0; left:0; right:0; padding:8px; background:linear-gradient(transparent, rgba(0,0,0,0.9)); font-size:12px; font-weight:bold; text-shadow:0 1px 3px rgba(0,0,0,0.8);">${s.title}</div>
-      </div>
-    `).join('');
-  } else { shortsSection.style.display = 'none'; }
-
-  const longVideos = filteredVideos.filter(v => v.type === 'video');
-  if (longVideos.length === 0) {
-    grid.innerHTML = `<div class="empty-state"><i class="fas fa-video" style="font-size:50px; margin-bottom:15px;"></i><h3>${currentSearchQuery ? 'نتیجه‌ای یافت نشد' : 'هنوز ویدیویی وجود ندارد'}</h3></div>`; return;
+function toggleSS(key, val){
+  currentSecurity[key] = val;
+  if(editingSite) editingSite.security = {...currentSecurity};
+  syncSecurityUI(); renderSecurityStatus(); reloadPreviewFrame();
+}
+async function handleEditorHtmlFile(input){
+  const f = input.files && input.files[0]; if(!f) return;
+  if(f.size>5*1024*1024){toast('فایل باید کمتر از ۵ مگابایت باشد.','error');return;}
+  try{
+    let content = await f.text();
+    content = sanitizeUserHtml(content);
+    if(currentSecurity.preflight){
+      const scan = performSecurityScan(content, {allowDomains: currentSecurity.allowDomains});
+      if(!scan.ok && !confirm('کد خطرناک:\n'+scan.findings.map(x=>'• '+x.msg).join('\n')+'\n\nادامه؟')) return;
+    }
+    $('htmlCodeEditor').value = content;
+    const fi=$('editorFileInfo'); fi.style.display='block'; fi.innerHTML=`<i class="fas fa-check"></i> ${escapeHtml(f.name)} بارگذاری شد`;
+    editingSite.htmlContent=content; editingSite.mode='html'; updateModeBadge(); reloadPreviewFrame(); toast('فایل بارگذاری شد','success');
+  }catch(e){toast('خطا در خواندن فایل','error');}
+}
+function applyHtmlCode(){
+  let clean = $('htmlCodeEditor').value;
+  clean = sanitizeUserHtml(clean);
+  if(currentSecurity.preflight){
+    const scan = performSecurityScan(clean, {allowDomains: currentSecurity.allowDomains});
+    if(!scan.ok){
+      console.warn('security findings:', scan.findings);
+      logConsole('warn', 'اسکن امنیتی: '+scan.findings.map(f=>f.msg).join(' | '));
+    }
   }
-  grid.innerHTML = longVideos.map(createVideoCardHTML).join('');
+  $('htmlCodeEditor').value = clean;
+  editingSite.htmlContent = clean; editingSite.mode='html'; updateModeBadge(); reloadPreviewFrame(); toast('کد اعمال شد','success');
 }
+function resetToBuilder(){ editingSite.mode='builder'; updateModeBadge(); reloadPreviewFrame(); toast('به حالت بلوکی برگشت','info'); }
 
-function renderShorts() {
-  const feed = document.getElementById('shortsFeed');
-  const shorts = filterVideos(videos.filter(v => v.type === 'short'));
-  if (shorts.length === 0) { feed.innerHTML = '<div style="color:white; text-align:center; padding:80px;">هنوز شورتی وجود ندارد.</div>'; return; }
-  feed.innerHTML = shorts.map(s => `
-    <div class="short-page">
-      <video src="${s.url}" loop playsinline preload="none" onclick="toggleShortPlay(this)"></video>
-      <div class="short-info"><h3>@${s.uploader}</h3><p>${s.title}</p></div>
-      <div class="short-side-actions">
-        <button class="short-action-btn" onclick="toggleShortLike('${s.id}')"><i class="fas fa-heart"></i><span>${formatNum(s.likes)}</span></button>
-        <button class="short-action-btn" onclick="openPlayer('${s.id}')"><i class="fas fa-comment"></i><span>0</span></button>
-      </div>
-    </div>
-  `).join('');
-
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      const video = entry.target.querySelector('video');
-      if (entry.isIntersecting) video.play().catch(()=>{});
-      else video.pause();
-    });
-  }, { threshold: 0.6 });
-  document.querySelectorAll('.short-page').forEach(p => observer.observe(p));
+function antiTamperHead(sec){
+  if(!sec || !sec.protect) return '';
+  return [
+    '<style>',
+    'html,body{-webkit-touch-callout:none!important;-webkit-user-select:none!important;-moz-user-select:none!important;-ms-user-select:none!important;user-select:none!important}',
+    'img,a{-webkit-user-drag:none!important;user-drag:none!important;pointer-events:auto}',
+    '::selection{background:transparent!important;color:inherit!important}',
+    '@media print{body{display:none!important}}',
+    '</style>',
+    '<script>',
+    '(function(){',
+    'var D=document,',
+    '    block=function(e){try{e.preventDefault();e.stopPropagation();return false;}catch(x){return false;}},',
+    '    evs=["contextmenu","dragstart","drag","selectstart","copy","cut","paste","beforecopy","beforecut","beforepaste"],',
+    '    i=0;for(;i<evs.length;i++){D.addEventListener(evs[i],block,true);}',
+    '    D.addEventListener("keydown",function(e){',
+    '      var k=(e.key||"").toLowerCase();',
+    '      if(e.key==="F12"||e.keyCode===123){block(e);return false;}',
+    '      if((e.ctrlKey||e.metaKey)&&e.shiftKey&&["i","j","c","k","e","m"].indexOf(k)>-1){block(e);return false;}',
+    '      if((e.ctrlKey||e.metaKey)&&["u","s","p","a","c","x","v"].indexOf(k)>-1){block(e);return false;}',
+    '    },true);',
+    '})();',
+    '<\/script>'
+  ].join('');
 }
-
-// ==========================================
-// پروفایل (کانال)
-// ==========================================
-async function renderProfile() {
-  if (!currentUser) { openAuth(); return; }
-  document.getElementById('profileName').textContent = getUserName(currentUser);
-  document.getElementById('profileAvatar').innerHTML = getUserAvatar(currentUser) ? `<img src="${getUserAvatar(currentUser)}">` : getUserName(currentUser).charAt(0).toUpperCase();
-  
-  try {
-    const query = Backendless.DataQueryBuilder.create().setWhereClause(`uploaderId='${currentUser.objectId}'`);
-    const userVideos = await Backendless.Data.of("Videos").find(query);
-    document.getElementById('profileVideoCount').textContent = formatNum(userVideos.length);
-    
-    const grid = document.getElementById('profileVideoGrid');
-    if (userVideos.length === 0) { grid.innerHTML = `<div class="empty-state"><i class="fas fa-video" style="font-size:50px; margin-bottom:15px;"></i><h3>هنوز ویدیویی آپلود نکرده‌اید</h3></div>`; return; }
-    
-    grid.innerHTML = userVideos.map(v => createVideoCardHTML({ ...v, id: v.objectId, uploader: v.uploaderName || 'کاربر', timestamp: v.created })).join('');
-  } catch(e) { console.error(e); }
+function botDetectionScript(sec){
+  if(!sec || !sec.ddos) return '';
+  return '<script>(function(){' +
+    'var bad=/HeadlessChrome|PhantomJS|SlimerJS|selenium|puppeteer|playwright|curl\\/|wget\\/|python-requests|scrapy|httpclient|okhttp|go-http-client/i;' +
+    'var ua=navigator.userAgent||"";' +
+    'var wd=navigator.webdriver===true;' +
+    'if(bad.test(ua)||wd){try{document.documentElement.innerHTML="<div style=\\"font-family:Tahoma;text-align:center;padding:40px;direction:rtl\\">دسترسی ربات‌ها مجاز نیست.</div>";}catch(x){}return;}' +
+    '})();<\/script>';
 }
-
-async function openChannelProfile() {
-  if (!currentChannelId) return;
-  if (currentUser && currentChannelId === currentUser.objectId) { switchView('profile'); return; }
-  
-  try {
-    const query = Backendless.DataQueryBuilder.create().setWhereClause(`uploaderId='${currentChannelId}'`);
-    const channelVideos = await Backendless.Data.of("Videos").find(query);
-    
-    // نمایش در صفحه پروفایل
-    const channelName = channelVideos.length > 0 ? (channelVideos[0].uploaderName || 'کانال') : 'کانال';
-    document.getElementById('profileName').textContent = channelName;
-    document.getElementById('profileAvatar').innerHTML = channelName.charAt(0).toUpperCase();
-    document.getElementById('profileVideoCount').textContent = formatNum(channelVideos.length);
-    
-    const grid = document.getElementById('profileVideoGrid');
-    if (channelVideos.length === 0) { grid.innerHTML = `<div class="empty-state"><i class="fas fa-video"></i><h3>ویدیویی ندارد</h3></div>`; return; }
-    grid.innerHTML = channelVideos.map(v => createVideoCardHTML({ ...v, id: v.objectId, uploader: v.uploaderName, timestamp: v.created })).join('');
-    
-    switchView('profile');
-    
-  } catch(e) { console.error(e); }
+function cookieBannerHtml(sec){
+  if(!sec || !sec.cookie) return '';
+  return '<div id="cb" style="position:fixed;bottom:0;left:0;right:0;background:rgba(0,0,0,.95);color:#fff;padding:14px;text-align:center;font-size:13px;z-index:99999;direction:rtl;font-family:Vazirmatn,sans-serif">🍪 این سایت از کوکی استفاده می‌کند. <button onclick="document.getElementById(\'cb\').style.display=\'none\'" style="background:#22c55e;color:#fff;border:none;padding:6px 14px;border-radius:6px;margin-right:10px;cursor:pointer;font-family:inherit">قبول</button></div>';
 }
-
-// ==========================================
-// پلیر
-// ==========================================
-const playerVideo = document.getElementById('playerVideo');
-const playerOverlay = document.getElementById('playerOverlay');
-const playerSpinner = document.getElementById('playerSpinner');
-const playerErrorMsg = document.getElementById('playerErrorMsg');
-
-function showLoader() { playerOverlay.classList.remove('hidden'); playerSpinner.style.display = 'block'; playerErrorMsg.textContent = ''; }
-function hideLoader() { playerOverlay.classList.add('hidden'); }
-function showError(msg) { playerOverlay.classList.remove('hidden'); playerSpinner.style.display = 'none'; playerErrorMsg.textContent = msg; }
-
-function setupPlayer(url) {
-  playerVideo.removeAttribute('src');
-  playerVideo.src = url; playerVideo.load(); playerVideo.play().catch(()=>{});
+function extrasFor(sec){
+  let head = '', body = '';
+  if(sec.noindex) head += '<meta name="robots" content="noindex, nofollow">\n';
+  head += antiTamperHead(sec);
+  head += botDetectionScript(sec);
+  body += cookieBannerHtml(sec);
+  return { head, body };
 }
+function splitIntoChunks(str, n){
+  const chunks = [];
+  const step = Math.ceil(str.length / n) || 1;
+  for(let i = 0; i < str.length; i += step){
+    chunks.push(str.slice(i, i + step));
+  }
+  return chunks;
+}
+function shuffleArray(arr){
+  const a = arr.slice();
+  const rnd = new Uint32Array(a.length);
+  crypto.getRandomValues(rnd);
+  for(let i = a.length - 1; i > 0; i--){
+    const j = rnd[i] % (i + 1);
+    const t = a[i]; a[i] = a[j]; a[j] = t;
+  }
+  return a;
+}
+function hiddenPage(inner, title, sec){
+  const encoded = b64(inner);
+  const CHUNK_COUNT = 12 + (crypto.getRandomValues(new Uint8Array(1))[0] % 8);
+  const chunks = splitIntoChunks(encoded, CHUNK_COUNT);
+  const order = shuffleArray(chunks.map((_, i) => i));
+  const shuffled = order.map(i => chunks[i]);
+  const shuffleCode = JSON.stringify(order);
+  const chunkData = JSON.stringify(shuffled);
+  const nonce = Array.from(crypto.getRandomValues(new Uint8Array(8))).map(b => b.toString(16).padStart(2,'0')).join('');
+  const bodyInner =
+    '<div class="b"><h3>برای مشاهده، جاوااسکریپت را فعال کنید</h3>' +
+    '<p style="color:#b4b4c8;font-size:13px;margin-top:8px">یا در Vigram Studio ثبت‌نام کنید.</p></div>' +
+    '<script>' +
+    '(function(){' +
+      'var _n="'+nonce+'";' +
+      'var _c='+chunkData+';' +
+      'var _o='+shuffleCode+';' +
+      'try{' +
+        'var _r=new Array(_c.length);' +
+        'for(var i=0;i<_o.length;i++){_r[_o[i]]=_c[i];}' +
+        'var _j=_r.join("");' +
+        'var _k=_j.split("").reverse().join("");' +
+        'var _h=decodeURIComponent(escape(atob(_k)));' +
+        'document.open();document.write(_h);document.close();' +
+      '}catch(e){try{document.body.innerHTML="<div style=\\"font-family:Tahoma;text-align:center;padding:40px;direction:rtl;color:#f8f8fc\\">خطا در بارگذاری محتوا.</div>";}catch(x){}}' +
+    '})();' +
+    '<\/script>';
+  return shell(title, sec, bodyInner);
+}
+async function encryptedPage(inner, pw, title, sec){
+  const enc = new TextEncoder();
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ITER = 190000;
+  const km = await crypto.subtle.importKey('raw', enc.encode(pw), 'PBKDF2', false, ['deriveKey']);
+  const key = await crypto.subtle.deriveKey(
+    {name:'PBKDF2', salt, iterations:ITER, hash:'SHA-256'},
+    km, {name:'AES-GCM', length:256}, false, ['encrypt']
+  );
+  const ct = new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM', iv}, key, enc.encode(inner)));
+  const tb = u => { let s=''; for(let i=0;i<u.length;i+=8192) s+=String.fromCharCode.apply(null, u.subarray(i,i+8192)); return btoa(s); };
+  const S = tb(salt), I = tb(iv), C = tb(ct);
+  const CHUNK_COUNT = 16 + (crypto.getRandomValues(new Uint8Array(1))[0] % 8);
+  const chunks = splitIntoChunks(C, CHUNK_COUNT);
+  const order = shuffleArray(chunks.map((_, i) => i));
+  const shuffled = order.map(i => chunks[i]);
+  const shuffleCode = JSON.stringify(order);
+  const chunkData = JSON.stringify(shuffled);
+  const nonce = Array.from(crypto.getRandomValues(new Uint8Array(8))).map(b => b.toString(16).padStart(2,'0')).join('');
 
-playerVideo.addEventListener('waiting', showLoader);
-playerVideo.addEventListener('playing', hideLoader);
-playerVideo.addEventListener('canplay', hideLoader);
-playerVideo.addEventListener('error', () => showError("مشکل در پخش ویدیو"));
-
-async function openPlayer(id) {
-  const v = videos.find(x => x.id === id);
-  if (!v) return;
-  currentPlayerVideoId = id;
-  currentChannelId = v.uploaderId;
-  
-  try { Backendless.Data.of("Videos").save({ objectId: id, views: (v.views || 0) + 1 }).catch(()=>{}); } catch(e){}
-  v.views++;
-  
-  switchView('player'); showLoader(); setupPlayer(v.url);
-  
-  document.getElementById('playerTitle').textContent = v.title;
-  document.getElementById('playerLikes').textContent = formatNum(v.likes);
-  document.getElementById('playerChannelName').textContent = v.uploader || 'کاربر';
-  document.getElementById('playerChannelAvatar').textContent = (v.uploader || 'U').charAt(0).toUpperCase();
-  
-  if (currentUser && v.uploaderId === currentUser.objectId) {
-    document.getElementById('ownerActions').classList.add('visible');
+  const js = '(' +
+    'function(){' +
+      'var _n="'+nonce+'";' +
+      'var _c='+chunkData+';' +
+      'var _o='+shuffleCode+';' +
+      'var S="'+S+'",I="'+I+'",ITER='+ITER+';' +
+      'function B(s){return Uint8Array.from(atob(s),function(c){return c.charCodeAt(0)})}' +
+      'function joinChunks(){var r=new Array(_c.length);for(var i=0;i<_o.length;i++){r[_o[i]]=_c[i];}return r.join("");}' +
+      'var f=document.getElementById("f");' +
+      'var p=document.getElementById("p");' +
+      'var err=document.getElementById("e");' +
+      'f.onsubmit=async function(ev){' +
+        'ev.preventDefault();' +
+        'try{' +
+          'var km=await crypto.subtle.importKey("raw",new TextEncoder().encode(p.value),"PBKDF2",false,["deriveKey"]);' +
+          'var k=await crypto.subtle.deriveKey({name:"PBKDF2",salt:B(S),iterations:ITER,hash:"SHA-256"},km,{name:"AES-GCM",length:256},false,["decrypt"]);' +
+          'var full=joinChunks();' +
+          'var d=await crypto.subtle.decrypt({name:"AES-GCM",iv:B(I)},k,B(full));' +
+          'document.open();document.write(new TextDecoder().decode(d));document.close();' +
+        '}catch(x){err.style.display="block";}' +
+      '};' +
+      'var m=location.hash.match(/^#p=(.*)$/);' +
+      'if(m){p.value=decodeURIComponent(m[1]);history.replaceState(null,"",location.pathname+location.search);f.dispatchEvent(new Event("submit",{cancelable:true}));}' +
+    '})();';
+  return shell(title, sec,
+    '<form id="f"><b>🔒 این سایت رمز دارد</b>' +
+    '<input id="p" type="password" placeholder="رمز عبور" required autofocus>' +
+    '<button>ورود</button>' +
+    '<div id="e">رمز اشتباه است</div></form>' +
+    '<script>'+js+'<\/script>');
+}
+async function buildPublished(site){
+  const sec = site.security || {};
+  const inner = siteInner(site);
+  const title = escapeHtml(site.title || 'سایت');
+  if(sec.password && sec.passwordValue && site.isPublic) return await encryptedPage(inner, sec.passwordValue, title, sec);
+  if(sec.encryption) return hiddenPage(inner, title, sec);
+  return inner;
+}
+function guardScript(sec){
+  const parts = [];
+  parts.push(`(function(){
+    try{
+      var P = window.parent;
+      var MSG = function(t,d){ try{ P.postMessage({__vigram:1, type:t, data:d}, '*'); }catch(e){} };
+      window.addEventListener('error', function(e){
+        MSG('error', {msg: e.message, src: e.filename, line: e.lineno, col: e.colno});
+      }, true);
+      window.addEventListener('unhandledrejection', function(e){
+        MSG('error', {msg: 'Unhandled rejection: '+((e.reason&&e.reason.message)||String(e.reason))});
+      }, true);
+      var _console = window.console || {};
+      ['log','info','warn','error'].forEach(function(level){
+        var orig = _console[level];
+        _console[level] = function(){
+          try{
+            var args = Array.prototype.slice.call(arguments).map(function(a){
+              try{ return typeof a==='string'?a:JSON.stringify(a); }catch(e){ return String(a); }
+            }).join(' ');
+            MSG(level, {msg: args});
+          }catch(e){}
+          try{ orig && orig.apply(_console, arguments); }catch(e){}
+        };
+      });
+    }catch(e){}
+  })();`);
+  if(sec.storageBlock){
+    parts.push(`try{
+      Object.defineProperty(window,'localStorage',{get:function(){throw new Error('localStorage blocked by Vigram security');}});
+      Object.defineProperty(window,'sessionStorage',{get:function(){throw new Error('sessionStorage blocked by Vigram security');}});
+    }catch(e){}`);
+  }
+  if(sec.panelBlock){
+    parts.push(`try{
+      if (window.top !== window.self) {
+        try{ Object.defineProperty(window,'top',{get:function(){return window;}}); }catch(e){}
+      }
+    }catch(e){}`);
+  }
+  return '<script>'+parts.join('\n')+'<\/script>';
+}
+function buildSandboxAttr(sec){
+  const allow = ['allow-scripts','allow-forms','allow-same-origin'];
+  if(sec.allowJS === false){
+    return 'allow-same-origin';
+  }
+  if(!sec.popupBlock) allow.push('allow-popups');
+  if(!sec.topNavBlock) allow.push('allow-top-navigation');
+  return allow.join(' ');
+}
+function renderBlock(b){
+  const c = b.content||{};
+  switch(b.type){
+    case 'hero': return `<div class="block hero-block"><h1>${escapeHtml(c.title)}</h1><p>${escapeHtml(c.subtitle)}</p></div>`;
+    case 'text': return `<div class="block text-block">${escapeHtml(c.text).replace(/\n/g,'<br>')}</div>`;
+    case 'image': return `<div class="block image-block"><img src="${escapeAttr(safeUrl(c.url))}" alt=""><div class="caption">${escapeHtml(c.caption)}</div></div>`;
+    case 'gallery': return `<div class="block gallery-block">${(c.images||[]).map(i=>`<img src="${escapeAttr(safeUrl(i))}" alt="">`).join('')}</div>`;
+    case 'list': return `<div class="block list-block"><ul>${(c.items||[]).map(i=>`<li>${escapeHtml(i)}</li>`).join('')}</ul></div>`;
+    case 'quote': return `<div class="block quote-block">“${escapeHtml(c.text)}”${c.author?`<div class="author">— ${escapeHtml(c.author)}</div>`:''}</div>`;
+    case 'button': return `<div class="block button-block"><a href="${escapeAttr(c.url==='#'?'#':safeUrl(c.url))}" rel="noopener noreferrer">${escapeHtml(c.label||'کلیک')}</a></div>`;
+    case 'divider': return '<div class="block divider-block"></div>';
+    default: return '';
+  }
+}
+function shell(title, sec, bodyInner){
+  const x = extrasFor(sec||{});
+  return '<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>'+escapeHtml(title)+'</title>'
+    + (sec.noindex?'<meta name="robots" content="noindex,nofollow">':'')
+    + x.head
+    + '<style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a0a10;color:#f8f8fc;font-family:Tahoma,sans-serif;text-align:center;padding:20px}'
+    + 'form,.b{background:#1c1c2e;padding:28px;border-radius:16px;width:min(340px,92vw)}'
+    + 'input,button{width:100%;padding:12px;margin-top:10px;border-radius:10px;border:0;font-size:14px;font-family:inherit}'
+    + 'button{background:linear-gradient(135deg,#6366f1,#a855f7);color:#fff;font-weight:700;cursor:pointer}'
+    + '#e{display:none;color:#f87171;font-size:12px;margin-top:8px}</style></head><body>'+bodyInner+'</body></html>';
+}
+function generateSiteHTML(site, blocks, theme, sec){
+  const x = extrasFor(sec||{}); const r = theme.radius||'16px';
+  const font = ({Vazirmatn:"'Vazirmatn',sans-serif",serif:'serif',monospace:'monospace',cursive:'cursive'})[theme.font]||"'Vazirmatn',sans-serif";
+  return `<!DOCTYPE html>
+<html lang="fa" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>${escapeHtml(site.title||'سایت من')}</title><meta name="description" content="${escapeAttr(site.description||'')}">
+${x.head}<link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet">
+<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:${font};background:${theme.bgColor};color:${theme.textColor};line-height:1.7}
+.container{max-width:800px;margin:0 auto;padding:40px 24px}.block{margin-bottom:32px;border-radius:${r}}
+.hero-block{padding:60px 30px;text-align:center;background:linear-gradient(135deg,rgba(99,102,241,.1),rgba(168,85,247,.1))}
+.hero-block h1{font-size:42px;font-weight:900;margin-bottom:14px}.hero-block p{font-size:17px;opacity:.75}
+.image-block img{width:100%;border-radius:${r}}.caption{text-align:center;font-size:13px;opacity:.6;margin-top:8px}
+.gallery-block{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}.gallery-block img{width:100%;height:160px;object-fit:cover;border-radius:${r}}
+.list-block ul{list-style:none}.list-block li{padding:12px 20px;background:rgba(128,128,128,.1);margin-bottom:8px;border-radius:${r}}
+.quote-block{padding:30px;border-right:4px solid ${theme.textColor};background:rgba(128,128,128,.05);font-style:italic}.author{margin-top:12px;font-size:14px;opacity:.65;text-align:left}
+.button-block{text-align:center}.button-block a{display:inline-block;padding:14px 30px;background:${theme.textColor};color:${theme.bgColor};text-decoration:none;font-weight:800;border-radius:${r}}
+.divider-block{height:1px;background:${theme.textColor};opacity:.2}.vigram-footer{text-align:center;padding:24px;font-size:12px;opacity:.5;border-top:1px solid rgba(128,128,128,.2);margin-top:40px}</style></head>
+<body><div class="container">${(blocks||[]).map(renderBlock).join('')}</div><div class="vigram-footer">ساخته‌شده با Vigram Studio</div>${x.body}</body></html>`;
+}
+function siteInner(site){
+  const sec = site.security||{};
+  const baseMeta = [];
+  if(sec.panelBlock !== false){
+    baseMeta.push('<meta name="referrer" content="no-referrer">');
   } else {
-    document.getElementById('ownerActions').classList.remove('visible');
+    baseMeta.push('<meta name="referrer" content="no-referrer-when-downgrade">');
   }
-
-  try {
-    const q = Backendless.DataQueryBuilder.create().setWhereClause(`videoId='${id}'`).setSortBy("created desc");
-    const comments = await Backendless.Data.of("Comments").find(q);
-    renderPlayerComments(comments);
-  } catch(e) { renderPlayerComments([]); }
-}
-
-function renderPlayerComments(comments) {
-  const list = document.getElementById('playerCommentsList');
-  document.getElementById('playerCommentCount').textContent = formatNum(comments.length);
-  if (comments.length === 0) { list.innerHTML = '<p style="color:var(--muted); font-size:13px;">اولین نظر را شما بنویسید!</p>'; return; }
-  list.innerHTML = comments.map(c => `<div class="comment-item"><div class="channel-avatar" style="width:32px; height:32px; font-size:13px;">${(c.userName || 'U').charAt(0).toUpperCase()}</div><div class="comment-body"><h5 style="font-size:13px; color:var(--muted); margin-bottom:4px;">@${c.userName || 'User'}</h5><p style="font-size:14px;">${c.text}</p></div></div>`).join('');
-}
-
-async function togglePlayerLike() {
-  if (!currentUser) { openAuth(); return; }
-  const v = videos.find(x => x.id === currentPlayerVideoId);
-  const isLiked = document.getElementById('playerLikeBtn').classList.contains('liked');
-  try {
-    await Backendless.Data.of("Videos").save({ objectId: v.id, likes: isLiked ? Math.max(0, v.likes - 1) : v.likes + 1 });
-    v.likes = isLiked ? Math.max(0, v.likes - 1) : v.likes + 1;
-    document.getElementById('playerLikes').textContent = formatNum(v.likes);
-    document.getElementById('playerLikeBtn').classList.toggle('liked', !isLiked);
-  } catch(e) { toast('خطا در ثبت لایک', true); }
-}
-
-async function addPlayerComment() {
-  if (!currentUser) { openAuth(); return; }
-  const input = document.getElementById('playerCommentInput'); 
-  const text = input.value.trim(); 
-  if (!text) return;
-  
-  if (/[\u0600-\u06FF]/.test(text)) {
-    toast('❌ فقط کامنت‌های انگلیسی پذیرفته می‌شوند.', true); return;
+  if(sec.mediaBlock || sec.geoBlock){
+    baseMeta.push('<meta http-equiv="Permissions-Policy" content="'+escapeAttr(buildPermissionsPolicy(sec))+'">');
   }
-  
-  try {
-    await Backendless.Data.of("Comments").save({
-      videoId: currentPlayerVideoId,
-      userId: currentUser.objectId,
-      userName: getUserName(currentUser),
-      text: text
-    });
-    input.value = '';
-    const q = Backendless.DataQueryBuilder.create().setWhereClause(`videoId='${currentPlayerVideoId}'`).setSortBy("created desc");
-    const comments = await Backendless.Data.of("Comments").find(q);
-    renderPlayerComments(comments);
-    toast('نظر شما ثبت شد.');
-  } catch(e) { toast('خطا در ثبت نظر', true); }
+  let inner;
+  if(site.mode==='html' && site.htmlContent){
+    const x = extrasFor(sec);
+    inner = site.htmlContent;
+    if(!/<head[^>]*>/i.test(inner)){
+      inner = '<!DOCTYPE html><html><head>'+baseMeta.join('\n')+x.head+'</head><body>'+inner+x.body+'</body></html>';
+    } else {
+      inner = inner.replace(/<head[^>]*>/i, m => m + baseMeta.join('\n') + x.head);
+      inner = inner.replace(/<\/body>/i, x.body+'</body>');
+    }
+  } else {
+    inner = generateSiteHTML(site, site.blocks||[], site.theme||currentTheme, sec);
+    if(/<head[^>]*>/i.test(inner)){
+      inner = inner.replace(/<head[^>]*>/i, m => m + baseMeta.join('\n'));
+    }
+  }
+  if(sec.allowJS !== false){
+    inner = inner.replace(/<body([^>]*)>/i, (m, attrs)=> m + guardScript(sec));
+  }
+  return inner;
 }
 
-async function deleteBrokenVideo() {
-  if (!confirm('آیا مطمئن هستید؟')) return;
-  try {
-    await Backendless.Data.of("Videos").remove({ objectId: currentPlayerVideoId });
-    toast('حذف شد.'); loadVideosFromServer(); switchView('home');
-  } catch(e) { toast('خطا در حذف', true); }
+function logConsole(level, msg){
+  const body = $('consoleBody'); if(!body) return;
+  const line = document.createElement('div');
+  line.className = 'console-line '+(level==='success'?'success':level==='error'?'error':level==='warn'?'warn':level==='info'?'info':'');
+  const ts = new Date().toLocaleTimeString('en-GB');
+  line.innerHTML = '<span class="ts">['+ts+']</span>'+escapeHtml(String(msg));
+  body.appendChild(line);
+  body.scrollTop = body.scrollHeight;
+}
+function clearConsole(){ const b=$('consoleBody'); if(b) b.innerHTML=''; }
+function toggleConsolePanel(){ $('consolePanel').classList.toggle('show'); }
+
+function reloadPreviewFrame(){
+  if(!editingSite) return;
+  const tmp = {...editingSite, blocks:currentBlocks, theme:currentTheme, security:currentSecurity};
+  const frame = $('previewFrame'); if(!frame) return;
+  frame.setAttribute('sandbox', buildSandboxAttr(currentSecurity));
+  try{
+    frame.srcdoc = siteInner(tmp);
+    logConsole('info', 'اجرای پروژه در sandbox: '+buildSandboxAttr(currentSecurity));
+  }catch(e){ logConsole('error', 'خطا در اجرا: '+e.message); }
+  clearTimeout(previewWatchdog);
+  previewWatchdog = setTimeout(()=>{
+    logConsole('info', 'پیش‌نمایش بارگذاری شد.');
+  }, 800);
+}
+function stopPreviewFrame(){
+  const frame = $('previewFrame'); if(!frame) return;
+  frame.setAttribute('sandbox','');
+  frame.srcdoc = '<!DOCTYPE html><html><body style="background:#0a0a10;color:#b4b4c8;font-family:Tahoma;text-align:center;padding:40px;direction:rtl"><h3>اجرا متوقف شد</h3><p>برای اجرای مجدد دکمه Play را بزنید.</p></body></html>';
+  logConsole('warn', 'اجرای پروژه متوقف شد.');
+}
+function refreshPreview(){ reloadPreviewFrame(); toast('بروزرسانی شد','info'); }
+
+window.addEventListener('message', function(ev){
+  const data = ev.data;
+  if(!data || data.__vigram !== 1) return;
+  const frame = $('previewFrame');
+  if(!frame || ev.source !== frame.contentWindow) return;
+  const t = data.type, d = data.data || {};
+  if(t === 'error') logConsole('error', (d.msg||'خطا') + (d.src?' @ '+d.src+(d.line?':'+d.line:''):''));
+  else if(t === 'warn') logConsole('warn', d.msg||'');
+  else if(t === 'info' || t === 'log') logConsole('info', d.msg||'');
+});
+
+/* ✅ هندلر دکمهٔ «اسکن امنیتی» — از performSecurityScan استفاده می‌کند، بدون بازگشت */
+function runSecurityScan(){
+  if(!editingSite) return;
+  const code = (editingSite.mode==='html' && editingSite.htmlContent) ? editingSite.htmlContent : siteInner(editingSite);
+  const scan = performSecurityScan(code, {allowDomains: currentSecurity.allowDomains});
+  if(scan.ok){ logConsole('success', 'اسکن امنیتی: هیچ الگوی مشکوکی یافت نشد.'); toast('کد پاک است','success'); }
+  else{
+    scan.findings.forEach(f=>logConsole('error', 'اسکن: '+f.msg + (f.sample?' ['+f.sample+']':'')));
+    toast(scan.findings.length+' مورد مشکوک','error');
+  }
+  toggleConsolePanel();
 }
 
-// ==========================================
-// آپلود
-// ==========================================
-async function setupUploaders() {
-  try {
-    const UC = await import('https://cdn.jsdelivr.net/npm/@uploadcare/file-uploader@1/web/file-uploader.min.js');
-    UC.defineComponents(UC);
-    
-    const rulesCheck = document.getElementById('agreeRules');
-    const videoWrapper = document.getElementById('videoWrapper');
-    const thumbWrapper = document.getElementById('thumbWrapper');
-
-    rulesCheck.addEventListener('change', (e) => {
-      if (e.target.checked) { videoWrapper.classList.remove('disabled'); thumbWrapper.classList.remove('disabled'); }
-      else { videoWrapper.classList.add('disabled'); thumbWrapper.classList.add('disabled'); }
-    });
-
-    const videoCtx = document.querySelector('uc-upload-ctx-provider[ctx-name="video-uploader"]');
-    videoCtx.addEventListener('common-upload-success', (e) => {
-      if (!currentUser) { openAuth(); return; }
-      const entries = e.detail.successEntries || [];
-      if (!entries.length) return;
-      
-      const entry = entries[0];
-      pendingVideoData = { uuid: entry.uuid, url: entry.cdnUrl, name: entry.name };
-      
-      if (pendingThumbData !== null) { finalizeUpload(); } 
-      else {
-        toast('ویدیو آپلود شد. تصویر پیش‌نمایش را آپلود کنید.');
-        setTimeout(() => {
-          if (pendingVideoData && pendingThumbData === null) { pendingThumbData = 'skip'; finalizeUpload(); }
-        }, 10000);
-      }
-    });
-
-    const thumbCtx = document.querySelector('uc-upload-ctx-provider[ctx-name="thumb-uploader"]');
-    thumbCtx.addEventListener('common-upload-success', (e) => {
-      const entries = e.detail.successEntries || [];
-      if (!entries.length) return;
-      pendingThumbData = entries[0].cdnUrl;
-      toast('تصویر آپلود شد.');
-      if (pendingVideoData) { finalizeUpload(); }
-    });
-
-    window.finalizeUpload = async function() {
-      if (!pendingVideoData || !currentUser) return;
-      
-      const title = document.getElementById('uploadTitle').value.trim() || pendingVideoData.name.replace(/\.[^/.]+$/, "");
-      const thumbnailUrl = (pendingThumbData && pendingThumbData !== 'skip') ? pendingThumbData : null;
-
-      try {
-        await Backendless.Data.of("Videos").save({
-          title: title, videoUuid: pendingVideoData.uuid, videoUrl: pendingVideoData.url,
-          thumbnailUrl: thumbnailUrl, type: currentUploadType,
-          uploaderId: currentUser.objectId, uploaderName: getUserName(currentUser),
-          views: 0, likes: 0
-        });
-        
-        toast('ویدیو روی سرور ذخیره شد!');
-        loadVideosFromServer();
-        
-        try { videoCtx.clearAll(); } catch(err){}
-        try { thumbCtx.clearAll(); } catch(err){}
-        pendingVideoData = null; pendingThumbData = null;
-        document.getElementById('uploadTitle').value = '';
-        rulesCheck.checked = false;
-        videoWrapper.classList.add('disabled'); thumbWrapper.classList.add('disabled');
-        
-        switchView('home');
-      } catch(err) { 
-        console.error(err);
-        toast('خطا در ذخیره در سرور: ' + err.message, true); 
-      }
-    };
-
-  } catch(err) { console.error("Upload Init Error:", err); }
+function collectEditing(){
+  editingSite.title = ($('siteTitleInput').value||'').trim()||'سایت بدون نام';
+  editingSite.slug = slugify($('siteSlugInput').value)||slugify(editingSite.title)||'site-'+Date.now();
+  editingSite.description = ($('siteDescInput').value||'').trim();
+  editingSite.isPublic = $('sitePublicInput').checked;
+  editingSite.blocks = currentBlocks; editingSite.theme = currentTheme; editingSite.security = {...currentSecurity};
+  if(editingSite.mode==='html') editingSite.htmlContent = $('htmlCodeEditor').value||editingSite.htmlContent;
+  if(editingSite.mode==='html' && !editingSite.htmlContent) editingSite.mode='builder';
+  editingSite.updated = new Date().toISOString();
+}
+function commitEditing(){
+  const i = userSites.findIndex(s=>s.id===editingSite.id);
+  const copy = JSON.parse(JSON.stringify(editingSite));
+  if(i>=0) userSites[i] = {...userSites[i], ...copy}; else userSites.unshift(copy);
+  return userSites.find(s=>s.id===editingSite.id);
 }
 
-// ==========================================
-// پخش زنده (Live Stream)
-// ==========================================
-async function startLiveStream() {
-  if (!currentUser) { openAuth(); return; }
-  
-  try {
-    // درخواست دسترسی به دوربین و میکروفون
-    liveStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-    const videoEl = document.getElementById('liveVideo');
-    videoEl.srcObject = liveStream;
-    
-    document.getElementById('startLiveBtn').style.display = 'none';
-    document.getElementById('stopLiveBtn').style.display = 'flex';
-    document.getElementById('liveBadge').style.display = 'flex';
-    
-    toast('پخش زنده شروع شد!');
-  } catch (err) {
-    console.error(err);
-    toast('دسترسی به دوربین ممکن نشد. لطفاً اجازه دسترسی بدهید.', true);
+async function publishSite(site){
+  if(!hasBL()) throw new Error('سرور متصل نیست');
+  const html = await buildPublished(site);
+  const dir = siteDir(site);
+  const name = siteFileName();
+  site.liveUrl = await uploadFile(dir, name, html, 'text/html');
+  site.updated = new Date().toISOString();
+  return site.liveUrl;
+}
+async function saveNow(){
+  if(!editingSite||!currentUser){openAuth();return;}
+  collectEditing(); const s=commitEditing(); persist(s); renderAll(); toast('ذخیره شد','success');
+}
+async function publishNow(){
+  if(!editingSite||!currentUser){openAuth();return;}
+  collectEditing();
+  if(currentSecurity.preflight){
+    const code = (editingSite.mode==='html' && editingSite.htmlContent) ? editingSite.htmlContent : siteInner(editingSite);
+    const scan = performSecurityScan(code, {allowDomains: currentSecurity.allowDomains});
+    if(!scan.ok){
+      const ok = confirm('اسکن امنیتی:\n'+scan.findings.map(f=>'• '+f.msg).join('\n')+'\n\nادامه انتشار؟');
+      if(!ok) return;
+    }
+  }
+  const btn=$('publishBtn'), orig=btn.innerHTML; btn.innerHTML='<i class="fas fa-spinner fa-spin"></i>'; btn.disabled=true;
+  try{
+    await publishSite(editingSite);
+    const s=commitEditing(); persist(s); renderAll(); updateLiveUrlUI(); updatePublishStatus(); updateSitePathInfo();
+    showShareModal(editingSite.liveUrl); toast('منتشر شد! لینک آماده است.','success');
+  }catch(err){console.error(err);toast('خطا در انتشار: '+(err.message||'نامشخص'),'error');}
+  finally{ btn.innerHTML=orig; btn.disabled=false; }
+}
+function generate404HTML(){
+  return `<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>404</title>
+<link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet"><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a0a10;color:#f8f8fc;font-family:Vazirmatn,sans-serif;text-align:center}
+.c{font-size:110px;font-weight:900;background:linear-gradient(135deg,#ef4444,#a855f7);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;line-height:1}p{color:#b4b4c8}</style></head>
+<body><div><div class="c">404</div><h1>صفحه پیدا نشد</h1><p>این صفحه وجود ندارد، حذف شده، یا هرگز ساخته نشده است.</p></div></body></html>`;
+}
+async function takeOffline(site){
+  if(hasBL() && site.liveUrl){
+    try{
+      await uploadFile(siteDir(site), siteFileName(), generate404HTML(), 'text/html');
+    }catch(e){ console.warn(e); }
+  }
+}
+async function deleteSiteFiles(site){
+  if(!hasBL()) return;
+  try{
+    await Backendless.Files.remove(siteDir(site));
+  }catch(e){
+    try{ await Backendless.Files.remove(siteDir(site) + '/' + siteFileName()); }catch(x){}
   }
 }
 
-function stopLiveStream() {
-  if (liveStream) {
-    liveStream.getTracks().forEach(track => track.stop());
-    liveStream = null;
-  }
-  const videoEl = document.getElementById('liveVideo');
-  videoEl.srcObject = null;
-  
-  document.getElementById('startLiveBtn').style.display = 'flex';
-  document.getElementById('stopLiveBtn').style.display = 'none';
-  document.getElementById('liveBadge').style.display = 'none';
-  
-  toast('پخش زنده متوقف شد.');
+async function trashSite(id){
+  const s = findSite(id); if(!s||!confirm('سایت به سطل بازیافت منتقل شود؟ (لینک آن موقتاً غیرفعال می‌شود)')) return;
+  s.isTrashed = true; s.updated = new Date().toISOString(); renderAll(); await takeOffline(s); persist(s); toast('به سطل بازیافت منتقل شد','success');
+}
+async function restoreSite(id){
+  const s = findSite(id); if(!s) return;
+  s.isTrashed = false; s.updated = new Date().toISOString();
+  try{ if(s.liveUrl) await publishSite(s); }catch(e){ toast('بازیابی شد، ولی انتشار مجدد ناموفق بود','error'); }
+  persist(s); renderAll(); toast('بازیابی شد','success');
+}
+function openDeleteModal(id){
+  const site = findSite(id); if(!site){toast('سایت پیدا نشد','error');return;}
+  deleteTargetSite = site; $('deleteConfirmInput').value=''; $('confirmDeleteBtn').disabled=true;
+  $('deleteConfirmInput').oninput = function(){ $('confirmDeleteBtn').disabled = this.value.trim() !== site.title.trim(); };
+  $('deleteConfirmModal').classList.add('show');
+}
+async function confirmPermanentDelete(){
+  const site = deleteTargetSite; if(!site||!currentUser) return;
+  if($('deleteConfirmInput').value.trim() !== site.title.trim()){ toast('نام سایت را دقیقاً وارد کنید','error'); return; }
+  const btn=$('confirmDeleteBtn'), orig=btn.innerHTML; btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> در حال حذف...'; btn.disabled=true;
+  try{
+    await deleteSiteFiles(site);
+    if(hasBL()){
+      try{ await Backendless.Files.remove(`sites_data/${site.ownerId}/${site.id}.json`); }catch(e){}
+      if(site.objId){ try{ await Backendless.Data.of(TABLE).remove(site.objId); }catch(e){} }
+    }
+    markAsDeleted(site.id);
+    userSites = userSites.filter(s=>s.id!==site.id);
+    saveSitesToStorage(currentUser.objectId, userSites);
+    jset(PUBLIC_INDEX_KEY, getPublicIndex().filter(s=>s.id!==site.id));
+    renderAll(); loadPublicSites(); closeModal('deleteConfirmModal');
+    if($('viewEditor').classList.contains('active')) switchView('sites');
+    toast('سایت برای همیشه حذف شد — لینک ۴۰۴ نمایش می‌دهد','success');
+  }catch(err){console.error(err);toast('خطا در حذف: '+err.message,'error');}
+  finally{ btn.innerHTML=orig; btn.disabled=false; deleteTargetSite=null; }
 }
 
-// ==========================================
-// ناوبری
-// ==========================================
-function switchView(viewName) {
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.querySelectorAll('video').forEach(v => { try { v.pause(); } catch(e){} });
-  
-  if (viewName === 'home') { document.getElementById('viewHome').classList.add('active'); document.getElementById('navHome').classList.add('active'); }
-  else if (viewName === 'shorts') { document.getElementById('viewShorts').classList.add('active'); document.getElementById('navShorts').classList.add('active'); }
-  else if (viewName === 'live') { 
-    if (!currentUser) { openAuth(); return; }
-    document.getElementById('viewLive').classList.add('active'); document.getElementById('navLive').classList.add('active'); 
-  }
-  else if (viewName === 'upload') { 
-    if (!currentUser) { openAuth(); return; }
-    document.getElementById('viewUpload').classList.add('active'); document.getElementById('navUpload').classList.add('active'); 
-  }
-  else if (viewName === 'player') { document.getElementById('viewPlayer').classList.add('active'); }
-  else if (viewName === 'profile') { 
-    if (!currentUser) { openAuth(); return; }
-    document.getElementById('viewProfile').classList.add('active'); document.getElementById('navProfile').classList.add('active'); renderProfile(); 
-  }
+function showShareModal(url){ $('shareUrlBox').textContent = url; $('shareModal').classList.add('show'); }
+function copyText(t){
+  if(navigator.clipboard) navigator.clipboard.writeText(t).then(()=>toast('کپی شد!','success')).catch(()=>fallbackCopy(t)); else fallbackCopy(t);
+}
+function fallbackCopy(t){
+  const ta = document.createElement('textarea'); ta.value=t; document.body.appendChild(ta); ta.select();
+  try{ document.execCommand('copy'); toast('کپی شد!','success'); }catch(e){ toast('کپی نشد','error'); }
+  document.body.removeChild(ta);
+}
+const copyLiveUrl = () => editingSite && editingSite.liveUrl && copyText(editingSite.liveUrl);
+const openLiveUrl = () => editingSite && editingSite.liveUrl && window.open(ownerUrl(editingSite),'_blank','noopener');
+
+async function exportSite(){
+  if(!editingSite) return;
+  try{
+    const tmp = {...editingSite, blocks:currentBlocks, theme:currentTheme, security:currentSecurity};
+    const html = await buildPublished(tmp);
+    const blob = new Blob([html], {type:'text/html;charset=utf-8'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = (slugify(editingSite.title)||'index')+'.html';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+    toast('فایل دانلود شد','success');
+  }catch(e){ toast('خطا در دانلود: '+(e.message||''),'error'); }
 }
 
-function handleSearch(query) { currentSearchQuery = query; renderHome(); renderShorts(); }
-function setUploadType(type) { currentUploadType = type; document.getElementById('typeVideoBtn').classList.toggle('active', type === 'video'); document.getElementById('typeShortBtn').classList.toggle('active', type === 'short'); }
-function toggleShortPlay(videoEl) { if (videoEl.paused) videoEl.play(); else videoEl.pause(); }
-function toggleShortLike(id) { if (!currentUser) { openAuth(); return; } toast('برای لایک، از صفحه پلیر استفاده کنید.'); }
+async function loadPublicSites(){
+  const grid = $('exploreGrid'); let rows = [];
+  if(hasBL()){
+    try{
+      const q = Backendless.DataQueryBuilder.create().setWhereClause('isPublic=true AND trashed=false').setSortBy(['updatedAt DESC']).setPageSize(60);
+      rows = (await Backendless.Data.of(TABLE).find(q)).filter(r=>r.liveUrl && !isDeleted(r.siteId)).map(r=>({id:r.siteId,title:r.title,liveUrl:r.liveUrl,views:r.views,mode:r.mode}));
+    }catch(e){}
+  }
+  if(!rows.length) rows = getPublicIndex().filter(s=>!isDeleted(s.id));
+  exploreRows = rows;
+  grid.innerHTML = rows.length ? rows.map((s,i)=>`<div class="site-card" onclick="openExplore(${i})">
+    <div class="site-card-thumb ${s.mode==='html'?'html-thumb':''}"><i class="fas ${s.mode==='html'?'fa-file-code':'fa-cube'}"></i></div>
+    <div class="site-card-title">${escapeHtml(s.title)}</div><div class="site-card-meta"><span><i class="fas fa-eye"></i> ${s.views||0}</span></div>
+    <div class="site-card-actions"><button class="btn btn-ghost" onclick="event.stopPropagation();openExplore(${i})"><i class="fas fa-external-link-alt"></i> باز کردن</button></div></div>`).join('')
+    : emptyState('globe','هنوز سایت عمومی وجود ندارد','اولین سایت عمومی را شما بسازید!');
+}
 
-document.getElementById('logoBtn').addEventListener('click', () => switchView('home'));
-document.getElementById('navHome').addEventListener('click', () => switchView('home'));
-document.getElementById('navShorts').addEventListener('click', () => switchView('shorts'));
-document.getElementById('navLive').addEventListener('click', () => switchView('live'));
-document.getElementById('navUpload').addEventListener('click', () => switchView('upload'));
-document.getElementById('navProfile').addEventListener('click', () => switchView('profile'));
-
-window.onload = () => {
+async function boot(){
+  const bt = $('bootText'); bt.textContent='اتصال...';
+  await new Promise(r=>setTimeout(r,250));
   checkUserSession();
-  loadVideosFromServer();
-  setupUploaders();
-  setupAvatarUploader();
-  updateTopbar();
-};
+  if(currentUser){ bt.textContent='دریافت سایت‌ها...'; await cloudLoad(); }
+  updateUI(); bt.textContent='خوش آمدید!';
+  await new Promise(r=>setTimeout(r,250));
+  $('boot').classList.add('done');
+  if(!currentUser) openAuth();
+}
+window.addEventListener('load', ()=>boot().catch(e=>{ console.error(e); $('boot').classList.add('done'); toast('خطا: '+e.message,'error'); }));
 </script>
 </body>
 </html>
